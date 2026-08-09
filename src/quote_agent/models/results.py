@@ -32,6 +32,7 @@ class ResultEntry(StrictModel):
 
     registry_id: str
     status: QuoteStatus
+    returned_legal_underwriter: str | None = None  # the underwriter actually named on the quote/disclosure
     premium_annual: float | None = None
     premium_monthly: float | None = None
     returned_coverage: CoverageConfig | None = None
@@ -49,6 +50,8 @@ class ResultEntry(StrictModel):
                 raise ValueError(
                     f"status={self.status.value} requires premium_annual and returned_coverage"
                 )
+            if not self.returned_legal_underwriter:
+                raise ValueError(f"status={self.status.value} requires returned_legal_underwriter")
         elif self.failure_reason is None:
             raise ValueError(f"status={self.status.value} requires failure_reason")
         return self

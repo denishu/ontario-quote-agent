@@ -51,12 +51,25 @@ def test_quoted_result_valid_with_premium_and_coverage():
     result = ResultEntry(
         registry_id="test-001",
         status=QuoteStatus.QUOTED_COMPARABLE,
+        returned_legal_underwriter="Test Insurance Company",
         premium_annual=1234.56,
         returned_coverage=make_benchmark(),
         evidence=make_evidence(),
         confidence=Confidence.HIGH,
     )
     assert result.coverage_variance == []
+
+
+def test_quoted_result_requires_returned_legal_underwriter():
+    with pytest.raises(ValidationError):
+        ResultEntry(
+            registry_id="test-001",
+            status=QuoteStatus.QUOTED_COMPARABLE,
+            premium_annual=1234.56,
+            returned_coverage=make_benchmark(),
+            evidence=make_evidence(),
+            confidence=Confidence.HIGH,
+        )
 
 
 def test_non_quote_result_requires_failure_reason():
