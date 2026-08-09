@@ -5,6 +5,7 @@
     "permitted_channels": ["direct", "broker", "aggregator"],
     "approved_source_ids": [],
     "excluded_source_ids": [],
+    "avoided_underwriters": ["REPLACE_WITH_AVOIDED_INSURER_NAME"],
     "callback_permission": true,
     "recording_permission": false
   },

@@ -20,6 +20,9 @@ class Consent(StrictModel):
     permitted_channels: list[DistributionType] = Field(default_factory=list)
     approved_source_ids: list[str] = Field(default_factory=list)  # registry_ids
     excluded_source_ids: list[str] = Field(default_factory=list)  # registry_ids to always skip
+    # legal_underwriter names to never count as a real result, even when a broker or aggregator
+    # route only reveals one after a result comes back (e.g. an existing family policy's underwriter)
+    avoided_underwriters: list[str] = Field(default_factory=list)
     callback_permission: bool = False
     recording_permission: bool = False
 

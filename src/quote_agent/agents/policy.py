@@ -78,7 +78,7 @@ def guard_against_sensitive_action(label: str, raw_evidence_text: str) -> None:
     if is_sensitive_action(label):
         raise StopBeforeSensitiveAction(
             raw_evidence_text=raw_evidence_text,
-            reason=f"Stopped before action '{label}' — requires a human checkpoint per policy",
+            reason=f"Stopped before action '{label}' -- requires a human checkpoint per policy",
         )
 
 

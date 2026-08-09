@@ -14,10 +14,21 @@ from pathlib import Path
 from quote_agent.agents import CaptchaDetected, QuoteObtained, StopBeforeSensitiveAction, run_web_attempt
 from quote_agent.io import DATA_DIR, load_intake
 from quote_agent.models import DistributionType, ProductScope, QuoteStatus, RegistryEntry
-from quote_agent.normalize import apply_result_duplicates, find_result_duplicates
+from quote_agent.normalize import (
+    apply_avoided_underwriter_results,
+    apply_result_duplicates,
+    find_avoided_underwriter_results,
+    find_result_duplicates,
+)
 from quote_agent.planner import plan_routes
 
 DEMO_EVIDENCE_DIR = Path(__file__).resolve().parents[1] / "evidence" / "demo"
+
+# Fictional example only -- deliberately not read from intake.example.json's
+# avoided_underwriters field, since that file is committed to the repo and
+# should never encode a real preference (e.g. an applicant's actual family
+# insurer). Your real intake.json (gitignored) is where a real value belongs.
+DEMO_AVOIDED_UNDERWRITERS = ["Example Mutual Insurance Company"]
 
 
 def fake_registry() -> list[RegistryEntry]:
@@ -65,6 +76,17 @@ def fake_registry() -> list[RegistryEntry]:
             product_scope=ProductScope.STANDARD_PPA,
             distinct_rate_source_id="broker-x",
             quote_url="https://example.com/brokerx",
+        ),
+        RegistryEntry(
+            registry_id="thinkinsure-broker",
+            last_verified_at="2026-08-09T00:00:00Z",
+            legal_underwriter="unknown",
+            insurer_group="varies",
+            brand_or_program="ThinkInsure",
+            distribution_type=DistributionType.BROKER,
+            product_scope=ProductScope.STANDARD_PPA,
+            distinct_rate_source_id="thinkinsure-broker",
+            quote_url="https://example.com/thinkinsure",
         ),
     ]
 
@@ -117,11 +139,27 @@ def fake_flows() -> dict:
             reason="Broker portal required clicking 'Submit Application' to proceed",
         )
 
+    def thinkinsure_broker(profile):
+        # ThinkInsure doesn't reveal which carrier it'll return until the
+        # quote comes back -- this one happens to resolve to the same
+        # underwriter as DEMO_AVOIDED_UNDERWRITERS below. Only the post-hoc
+        # avoidance check can catch this; nothing about the registry entry
+        # itself signals it in advance. (Fictional example underwriter --
+        # this script never reads a real avoided-underwriter value out of
+        # intake.example.json, since that file is committed to the repo.)
+        return QuoteObtained(
+            raw_evidence_text=f"ThinkInsure matched you with {DEMO_AVOIDED_UNDERWRITERS[0]}: $1,190.00/year",
+            premium_annual=1190.00,
+            returned_coverage=profile.coverage_benchmark,
+            returned_legal_underwriter=DEMO_AVOIDED_UNDERWRITERS[0],
+        )
+
     return {
         "aviva-direct": aviva_direct,
         "mychoice-aggregator": mychoice_aggregator,
         "td-direct": td_direct,
         "broker-x": broker_x,
+        "thinkinsure-broker": thinkinsure_broker,
     }
 
 
@@ -149,9 +187,12 @@ def main() -> None:
         )
 
     dedup_report = find_result_duplicates(results)
-    final_results = apply_result_duplicates(results, dedup_report)
+    deduped_results = apply_result_duplicates(results, dedup_report)
 
-    print("\n=== After result-time dedup ===")
+    avoidance_report = find_avoided_underwriter_results(deduped_results, DEMO_AVOIDED_UNDERWRITERS)
+    final_results = apply_avoided_underwriter_results(deduped_results, avoidance_report)
+
+    print("\n=== After result-time dedup + avoided-underwriter check ===")
     for r in final_results:
         print(
             f"{r.registry_id:22s} {r.status.value:20s} "
