@@ -1,8 +1,9 @@
 from enum import Enum
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
+from quote_agent.models.base import StrictModel
 from quote_agent.models.coverage import CoverageConfig
 from quote_agent.models.registry import DistributionType
 
@@ -13,7 +14,7 @@ class ConsentMode(str, Enum):
     ESTIMATE_ONLY = "estimate_only"
 
 
-class Consent(BaseModel):
+class Consent(StrictModel):
     timestamp: str  # ISO 8601 datetime
     mode: ConsentMode
     permitted_channels: list[DistributionType] = Field(default_factory=list)
@@ -22,7 +23,7 @@ class Consent(BaseModel):
     recording_permission: bool = False
 
 
-class Identity(BaseModel):
+class Identity(StrictModel):
     legal_name: str
     date_of_birth: str  # ISO 8601 date
     licence_number: str | None = None
@@ -31,7 +32,7 @@ class Identity(BaseModel):
     licensed_since: str | None = None  # ISO 8601 date
 
 
-class Address(BaseModel):
+class Address(StrictModel):
     street: str
     unit: str | None = None
     city: str
@@ -40,14 +41,14 @@ class Address(BaseModel):
     residence_start_date: str | None = None  # ISO 8601 date
 
 
-class HouseholdMember(BaseModel):
+class HouseholdMember(StrictModel):
     name: str
     relationship: str
     licensed: bool
     licence_class: str | None = None
 
 
-class Vehicle(BaseModel):
+class Vehicle(StrictModel):
     vin: str
     model_year: int
     make: str
@@ -58,23 +59,23 @@ class Vehicle(BaseModel):
     commute_one_way_km: float | None = None
 
 
-class AccidentRecord(BaseModel):
+class AccidentRecord(StrictModel):
     date: str  # ISO 8601 date
     at_fault_percentage: int | None = None
     description: str
 
 
-class ConvictionRecord(BaseModel):
+class ConvictionRecord(StrictModel):
     date: str  # ISO 8601 date
     description: str
 
 
-class CancellationRecord(BaseModel):
+class CancellationRecord(StrictModel):
     date: str  # ISO 8601 date
     reason: str
 
 
-class InsuranceHistory(BaseModel):
+class InsuranceHistory(StrictModel):
     current_insurer: str | None = None
     current_policy_expiry: str | None = None  # ISO 8601 date
     years_continuously_insured: int | None = None
@@ -84,7 +85,7 @@ class InsuranceHistory(BaseModel):
     convictions_last_3_years: list[ConvictionRecord] = Field(default_factory=list)
 
 
-class IntakeProfile(BaseModel):
+class IntakeProfile(StrictModel):
     """The applicant's own profile, entered once. This is the input sent
     (subject to per-route data minimization) to every rate source, and the
     `coverage_benchmark` every returned quote gets diffed against.

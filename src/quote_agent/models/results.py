@@ -1,7 +1,8 @@
 from enum import Enum
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import Field, model_validator
 
+from quote_agent.models.base import StrictModel
 from quote_agent.models.coverage import CoverageConfig, Discount
 from quote_agent.models.status import QUOTE_STATUSES, QuoteStatus
 
@@ -12,7 +13,7 @@ class Confidence(str, Enum):
     LOW = "low"  # estimate or unresolved coverage difference
 
 
-class Evidence(BaseModel):
+class Evidence(StrictModel):
     """Required on every result regardless of status. artifact_ref points
     into evidence/ (gitignored) — never a raw, unredacted capture.
     """
@@ -23,7 +24,7 @@ class Evidence(BaseModel):
     artifact_ref: str  # redacted screenshot, structured call note, or response reference
 
 
-class ResultEntry(BaseModel):
+class ResultEntry(StrictModel):
     """One attempt against one registry entry. A quote outcome requires a
     premium and coverage; every other outcome requires a failure_reason and
     next_action instead. Evidence is required either way.

@@ -1,7 +1,8 @@
 from enum import Enum
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
+from quote_agent.models.base import StrictModel
 from quote_agent.models.status import QuoteStatus
 
 
@@ -34,7 +35,7 @@ class Requirement(str, Enum):
     OTHER = "other"
 
 
-class RegistryEntry(BaseModel):
+class RegistryEntry(StrictModel):
     """One row of the market map: metadata about a target rate source.
     Research output, produced before any automation runs. Never contains
     applicant data.

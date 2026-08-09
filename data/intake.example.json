@@ -1,0 +1,72 @@
+{
+  "consent": {
+    "timestamp": "2026-08-09T09:00:00-04:00",
+    "mode": "live_quote",
+    "permitted_channels": ["direct", "broker", "aggregator"],
+    "approved_source_ids": [],
+    "callback_permission": true,
+    "recording_permission": false
+  },
+  "identity": {
+    "legal_name": "REPLACE_WITH_YOUR_LEGAL_NAME",
+    "date_of_birth": "1990-01-01",
+    "licence_number": "REPLACE_WITH_YOUR_ON_LICENCE_NUMBER",
+    "licence_province": "ON",
+    "licence_class": "G",
+    "licensed_since": "2008-01-01"
+  },
+  "contact_email": "REPLACE_WITH_YOUR_EMAIL@example.com",
+  "contact_phone": "REPLACE_WITH_YOUR_PHONE",
+  "address": {
+    "street": "REPLACE_WITH_YOUR_STREET",
+    "unit": null,
+    "city": "Toronto",
+    "province": "ON",
+    "postal_code": "REPLACE_WITH_YOUR_POSTAL_CODE",
+    "residence_start_date": "2015-06-01"
+  },
+  "household": [
+    {
+      "name": "REPLACE_OR_REMOVE_IF_NONE",
+      "relationship": "parent",
+      "licensed": true,
+      "licence_class": "G"
+    }
+  ],
+  "vehicles": [
+    {
+      "vin": "REPLACE_WITH_YOUR_VIN",
+      "model_year": 2020,
+      "make": "Toyota",
+      "model": "Corolla",
+      "ownership": "owned",
+      "primary_use": "commute",
+      "annual_km": 12000,
+      "commute_one_way_km": 15
+    }
+  ],
+  "insurance_history": {
+    "current_insurer": "REPLACE_WITH_CURRENT_INSURER_OR_NULL",
+    "current_policy_expiry": null,
+    "years_continuously_insured": 5,
+    "reason_for_shopping": "Comparing rates for the hackathon submission",
+    "cancellations_last_3_years": [],
+    "accidents_last_6_years": [],
+    "convictions_last_3_years": []
+  },
+  "coverage_benchmark": {
+    "effective_date": "2026-09-01",
+    "term_months": 12,
+    "third_party_liability_limit": 2000000,
+    "dcpd_included": true,
+    "dcpd_deductible": null,
+    "accident_benefits_mandatory": true,
+    "optional_benefits": {},
+    "uninsured_automobile_included": null,
+    "collision_deductible": 1000,
+    "comprehensive_deductible": 1000,
+    "all_perils_deductible": null,
+    "endorsements": ["OPCF44R"],
+    "telematics_opt_in": false
+  }
+}

@@ -1,11 +1,13 @@
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from quote_agent.models.base import StrictModel
 
 IncludedStatus = Literal["included", "excluded", "unavailable", "unknown"]
 
 
-class CoverageConfig(BaseModel):
+class CoverageConfig(StrictModel):
     """A coverage configuration: either the benchmark requested of every
     source, or the coverage actually returned by one source. Diffing two
     instances of this model field-by-field is the whole normalizer.
@@ -26,7 +28,7 @@ class CoverageConfig(BaseModel):
     telematics_opt_in: bool = False
 
 
-class Discount(BaseModel):
+class Discount(StrictModel):
     name: str
     applied: bool
     conditional_on: str | None = None  # e.g. "bundle", "membership", "telematics"
