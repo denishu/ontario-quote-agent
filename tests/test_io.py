@@ -9,6 +9,12 @@ def test_intake_example_matches_schema():
     assert profile.coverage_benchmark.third_party_liability_limit == 2_000_000
 
 
-def test_registry_and_results_start_empty():
-    assert load_registry() == []
+def test_registry_has_valid_unique_entries():
+    entries = load_registry()
+    assert len(entries) > 0
+    registry_ids = [e.registry_id for e in entries]
+    assert len(registry_ids) == len(set(registry_ids))  # no duplicate registry_ids
+
+
+def test_results_starts_empty():
     assert load_results() == []
