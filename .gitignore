@@ -1,0 +1,24 @@
+# Sensitive data — never commit real applicant data or evidence artifacts
+data/intake.json
+evidence/*
+!evidence/.gitkeep
+*.env
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# Playwright
+playwright-report/
+test-results/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
