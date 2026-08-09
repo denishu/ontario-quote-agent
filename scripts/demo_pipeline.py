@@ -88,10 +88,23 @@ def fake_flows() -> dict:
         )
 
     def mychoice_aggregator(profile):
+        # Deliberately different collision_deductible than the benchmark —
+        # proves classify_quote() is doing a real field-by-field diff here,
+        # not just echoing a hardcoded "comparable" status. This result
+        # also happens to share aviva-direct's underwriter, so it
+        # demonstrates two mechanisms in sequence: quoted_non_comparable
+        # from the coverage diff, then further reclassified to
+        # duplicate_rate_source by the result-time dedup pass below.
+        non_comparable_coverage = profile.coverage_benchmark.model_copy(
+            update={"collision_deductible": 500}
+        )
         return QuoteObtained(
-            raw_evidence_text="MyChoice matched you with Aviva Insurance Company of Canada: $1,301.50/year",
+            raw_evidence_text=(
+                "MyChoice matched you with Aviva Insurance Company of Canada: "
+                "$1,301.50/year, $500 collision deductible"
+            ),
             premium_annual=1301.50,
-            returned_coverage=profile.coverage_benchmark,
+            returned_coverage=non_comparable_coverage,
             returned_legal_underwriter="Aviva Insurance Company of Canada",
         )
 
