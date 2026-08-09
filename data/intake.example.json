@@ -4,6 +4,7 @@
     "mode": "live_quote",
     "permitted_channels": ["direct", "broker", "aggregator"],
     "approved_source_ids": [],
+    "excluded_source_ids": [],
     "callback_permission": true,
     "recording_permission": false
   },

@@ -19,6 +19,7 @@ class Consent(StrictModel):
     mode: ConsentMode
     permitted_channels: list[DistributionType] = Field(default_factory=list)
     approved_source_ids: list[str] = Field(default_factory=list)  # registry_ids
+    excluded_source_ids: list[str] = Field(default_factory=list)  # registry_ids to always skip
     callback_permission: bool = False
     recording_permission: bool = False
 
