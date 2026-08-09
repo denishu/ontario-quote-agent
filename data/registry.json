@@ -100,5 +100,39 @@
     "automation_notes": "Surex captures basic info online or by phone and shops the market on the applicant's behalf -- the web flow may terminate in callback_required rather than a comparable quote depending on how much can be completed online.",
     "status": "unresolved",
     "evidence_url": "https://www.surex.com/insurance"
+  },
+  {
+    "registry_id": "onlia-broker",
+    "last_verified_at": "2026-08-09T00:00:00Z",
+    "legal_underwriter": "unknown (resolved at quote time)",
+    "insurer_group": "varies",
+    "brand_or_program": "Onlia",
+    "distribution_type": "broker",
+    "product_scope": "standard_PPA",
+    "distinct_rate_source_id": "onlia-broker",
+    "quote_url": "https://www.onlia.ca/car-insurance/quote",
+    "public_phone_route": null,
+    "licensed_intermediary": "Onlia",
+    "requirements": ["licence", "VIN"],
+    "automation_notes": "Fully digital brokerage -- markets an instant online quote and purchase flow in about 3 minutes, no broker call typically required. Backed by a joint venture between Achmea and Fairfax Financial; the exact underwriting legal entity was not confirmed from public research, so capture whatever the actual quote/disclosure page names.",
+    "status": "unresolved",
+    "evidence_url": "https://www.onlia.ca/car-insurance"
+  },
+  {
+    "registry_id": "thinkinsure-broker",
+    "last_verified_at": "2026-08-09T00:00:00Z",
+    "legal_underwriter": "unknown (resolved at quote time)",
+    "insurer_group": "varies",
+    "brand_or_program": "ThinkInsure",
+    "distribution_type": "broker",
+    "product_scope": "standard_PPA",
+    "distinct_rate_source_id": "thinkinsure-broker",
+    "quote_url": "https://www.thinkinsure.ca/car-insurance/ontario-quote.php",
+    "public_phone_route": "1-855-550-5515",
+    "licensed_intermediary": "ThinkInsure (RIBO-licensed)",
+    "requirements": ["licence", "VIN"],
+    "automation_notes": "Independent broker representing 50+ insurers, including Gore Mutual -- one of the few practical paths to a mutual, since Gore Mutual has no direct consumer quote page of its own (confirmed via research: Gore Mutual is broker-only). Ontario's Insurance Act requires a broker to disclose its full carrier list and all quote outcomes obtained for the applicant on request -- ask for the complete list, not just the first quote returned.",
+    "status": "unresolved",
+    "evidence_url": "https://www.thinkinsure.ca/car-insurance/ontario-quote.php"
   }
 ]
