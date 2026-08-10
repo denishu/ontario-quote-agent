@@ -124,3 +124,38 @@ def set_date(
 
     day_scope = page.locator(day_container_selector) if day_container_selector else page
     day_scope.get_by_text(str(target.day), exact=True).first.click()
+
+
+def resolve_autocomplete(
+    page: Page,
+    field: Locator,
+    query: str,
+    suggestion_selector: str,
+    match_text: str | None = None,
+) -> None:
+    """A type-ahead autocomplete (e.g. Onlia's address field) -- typing
+    alone doesn't set a valid value, a suggestion must be clicked. Types
+    query, waits for at least one suggestion to appear, then clicks the
+    one matching match_text (substring, case-sensitive as typed) or just
+    the first suggestion if match_text is None.
+    """
+    field.fill(query)
+    suggestions = page.locator(suggestion_selector)
+    suggestions.first.wait_for(state="visible")
+    if match_text:
+        suggestions.get_by_text(match_text, exact=False).first.click()
+    else:
+        suggestions.first.click()
+
+
+def select_multiple_cards(container: Locator, values: list[str]) -> None:
+    """A set of independently-toggled cards, not mutually exclusive like a
+    radio group -- e.g. Onlia's "select all additional drivers that
+    should be in the policy" step. Clicks each card whose visible text
+    matches one of `values`. Cards not named in `values` are left as
+    whatever their current state already is -- pass the complete set of
+    names that should end up selected, since this doesn't deselect
+    anything on its own.
+    """
+    for value in values:
+        container.get_by_text(value, exact=False).first.click()

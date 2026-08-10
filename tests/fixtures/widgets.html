@@ -65,6 +65,18 @@
     <div id="cal-days"></div>
   </div>
 
+  <!-- Address autocomplete: typing alone doesn't set a valid value, a suggestion must be clicked -->
+  <label for="address">Street Address</label>
+  <input id="address" type="text" placeholder="Please enter and select street address" autocomplete="off">
+  <ul id="address-suggestions" style="display:none;"></ul>
+
+  <!-- Multi-select cards: independently toggled, not mutually exclusive like a radio group -->
+  <div id="additional-drivers">
+    <div class="driver-card" data-selected="false">Person A</div>
+    <div class="driver-card" data-selected="false">Person B</div>
+    <div class="driver-card" data-selected="false">Person C</div>
+  </div>
+
 <script>
   const CAL_MONTHS = [
     { name: 'August', number: 8, year: 2026, days: 31 },
@@ -106,6 +118,37 @@
   });
 
   renderCalendar();
+</script>
+
+<script>
+  const addressInput = document.getElementById('address');
+  const addressSuggestions = document.getElementById('address-suggestions');
+  addressInput.addEventListener('input', () => {
+    const query = addressInput.value;
+    addressSuggestions.innerHTML = '';
+    if (query.length > 0) {
+      const options = [`${query} St, Toronto, ON`, `${query} St, Ottawa, ON`];
+      options.forEach((opt) => {
+        const li = document.createElement('li');
+        li.textContent = opt;
+        li.addEventListener('click', () => {
+          addressInput.value = opt;
+          addressSuggestions.style.display = 'none';
+        });
+        addressSuggestions.appendChild(li);
+      });
+      addressSuggestions.style.display = 'block';
+    } else {
+      addressSuggestions.style.display = 'none';
+    }
+  });
+
+  document.querySelectorAll('#additional-drivers .driver-card').forEach((card) => {
+    card.addEventListener('click', () => {
+      const selected = card.dataset.selected === 'true';
+      card.dataset.selected = selected ? 'false' : 'true';
+    });
+  });
 </script>
 
 <script>

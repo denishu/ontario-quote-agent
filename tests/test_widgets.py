@@ -8,7 +8,9 @@ from quote_agent.agents.widgets import (
     adjust_stepper,
     click_radio_or_toggle,
     fill_text,
+    resolve_autocomplete,
     select_custom_dropdown,
+    select_multiple_cards,
     select_native,
     set_checkbox,
     set_date,
@@ -98,3 +100,28 @@ def test_set_date_navigates_backward_after_moving_forward(page):
     _set_date(page, date(2026, 10, 5))  # move forward first
     _set_date(page, date(2026, 8, 15))  # then back
     assert page.locator("#start-date").input_value() == "15-08-2026"
+
+
+def test_resolve_autocomplete_picks_first_suggestion_by_default(page):
+    resolve_autocomplete(page, page.locator("#address"), "123 Main", "#address-suggestions li")
+    assert page.locator("#address").input_value() == "123 Main St, Toronto, ON"
+
+
+def test_resolve_autocomplete_matches_specific_suggestion(page):
+    resolve_autocomplete(
+        page,
+        page.locator("#address"),
+        "123 Main",
+        "#address-suggestions li",
+        match_text="Ottawa",
+    )
+    assert page.locator("#address").input_value() == "123 Main St, Ottawa, ON"
+
+
+def test_select_multiple_cards_selects_only_the_named_ones(page):
+    select_multiple_cards(page.locator("#additional-drivers"), ["Person A", "Person C"])
+
+    cards = page.locator("#additional-drivers .driver-card")
+    assert cards.filter(has_text="Person A").get_attribute("data-selected") == "true"
+    assert cards.filter(has_text="Person B").get_attribute("data-selected") == "false"
+    assert cards.filter(has_text="Person C").get_attribute("data-selected") == "true"
