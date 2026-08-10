@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Widget fixture</title>
+<style>
+  .chip { display: inline-block; padding: 4px 10px; border: 1px solid #999; margin-right: 4px; cursor: pointer; }
+  .chip[aria-checked="true"] { background: #ddd; font-weight: bold; }
+  .dropdown-list { border: 1px solid #999; display: none; }
+  .dropdown-list.open { display: block; }
+  .dropdown-list [role="option"] { padding: 4px 8px; cursor: pointer; }
+</style>
+</head>
+<body>
+
+  <!-- Plain text input -->
+  <label for="first-name">First Name</label>
+  <input id="first-name" type="text" placeholder="First Name">
+
+  <!-- Native select -->
+  <label for="province">Province</label>
+  <select id="province">
+    <option value="">Please select</option>
+    <option value="ON">Ontario</option>
+    <option value="QC">Quebec</option>
+    <option value="BC">British Columbia</option>
+  </select>
+
+  <!-- Custom ARIA-compliant combobox (div-based, not a native select) -->
+  <div id="licence-status-widget">
+    <button type="button" role="combobox" aria-haspopup="listbox" aria-expanded="false" id="licence-status-trigger">
+      Please select
+    </button>
+    <ul role="listbox" class="dropdown-list" id="licence-status-list">
+      <li role="option" data-value="Licenced">Licenced</li>
+      <li role="option" data-value="Suspended">Suspended</li>
+      <li role="option" data-value="Cancelled">Cancelled</li>
+    </ul>
+  </div>
+
+  <!-- Radio-style toggle "pills" (not native radio inputs, role=radio on divs) -->
+  <div role="radiogroup" aria-label="Vehicle use" id="vehicle-use-group">
+    <span role="radio" aria-checked="false" data-value="commute" class="chip">Commuting</span>
+    <span role="radio" aria-checked="false" data-value="pleasure" class="chip">Pleasure</span>
+    <span role="radio" aria-checked="false" data-value="business" class="chip">Business</span>
+  </div>
+
+  <!-- Checkbox -->
+  <label><input type="checkbox" id="winter-tires"> Do you have winter tires?</label>
+
+  <!-- +/- stepper, no direct text entry -->
+  <div id="tickets-stepper">
+    <button type="button" id="tickets-minus">-</button>
+    <span id="tickets-value">0</span>
+    <button type="button" id="tickets-plus">+</button>
+  </div>
+
+<script>
+  const trigger = document.getElementById('licence-status-trigger');
+  const list = document.getElementById('licence-status-list');
+  trigger.addEventListener('click', () => {
+    const open = list.classList.toggle('open');
+    trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  list.querySelectorAll('[role="option"]').forEach((opt) => {
+    opt.addEventListener('click', () => {
+      trigger.textContent = opt.dataset.value;
+      trigger.dataset.value = opt.dataset.value;
+      list.classList.remove('open');
+      trigger.setAttribute('aria-expanded', 'false');
+    });
+  });
+
+  document.querySelectorAll('#vehicle-use-group [role="radio"]').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('#vehicle-use-group [role="radio"]').forEach((c) => c.setAttribute('aria-checked', 'false'));
+      chip.setAttribute('aria-checked', 'true');
+    });
+  });
+
+  let ticketsValue = 0;
+  const ticketsSpan = document.getElementById('tickets-value');
+  document.getElementById('tickets-plus').addEventListener('click', () => {
+    ticketsValue += 1;
+    ticketsSpan.textContent = String(ticketsValue);
+  });
+  document.getElementById('tickets-minus').addEventListener('click', () => {
+    ticketsValue = Math.max(0, ticketsValue - 1);
+    ticketsSpan.textContent = String(ticketsValue);
+  });
+</script>
+</body>
+</html>
