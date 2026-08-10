@@ -30,10 +30,17 @@ class Consent(StrictModel):
 class Identity(StrictModel):
     legal_name: str
     date_of_birth: str  # ISO 8601 date
+    gender: str | None = None  # not restricted to a fixed set -- forms vary in the options they offer
+    marital_status: str | None = None
     licence_number: str | None = None
     licence_province: str = "ON"
     licence_class: str | None = None
-    licensed_since: str | None = None  # ISO 8601 date
+    licence_status: str | None = None  # e.g. "valid", "expired", "suspended" -- wording varies by site
+    licensed_since: str | None = None  # ISO 8601 date -- first licensed anywhere (Canada or elsewhere)
+    g1_licence_date: str | None = None  # ISO 8601 date -- Ontario graduated licensing milestones
+    g2_licence_date: str | None = None
+    full_g_licence_date: str | None = None
+    is_student_living_away_from_home: bool | None = None  # discount eligibility
 
 
 class Address(StrictModel):
@@ -57,10 +64,15 @@ class Vehicle(StrictModel):
     model_year: int
     make: str
     model: str
-    ownership: Literal["owned", "leased"]
+    ownership: Literal["owned", "leased", "financed"]
+    new_or_used_at_purchase: Literal["new", "used"] | None = None
+    purchase_or_lease_date: str | None = None  # ISO 8601 date (day is arbitrary if only month/year is known)
     primary_use: Literal["pleasure", "commute", "school", "business", "farm", "commercial"]
     annual_km: int
     commute_one_way_km: float | None = None
+    winter_tires: bool | None = None
+    anti_theft_device: bool | None = None
+    parking_type: str | None = None  # e.g. "garage", "driveway", "street" -- not restricted, wording varies by site
 
 
 class AccidentRecord(StrictModel):
@@ -79,14 +91,21 @@ class CancellationRecord(StrictModel):
     reason: str
 
 
+class LicenceSuspensionRecord(StrictModel):
+    date: str  # ISO 8601 date
+    description: str
+
+
 class InsuranceHistory(StrictModel):
     current_insurer: str | None = None
     current_policy_expiry: str | None = None  # ISO 8601 date
-    years_continuously_insured: int | None = None
+    years_continuously_insured: int | None = None  # total years insured anywhere, continuously
+    years_with_current_insurer: int | None = None  # distinct from the above -- years with THIS insurer specifically
     reason_for_shopping: str | None = None
     cancellations_last_3_years: list[CancellationRecord] = Field(default_factory=list)
     accidents_last_6_years: list[AccidentRecord] = Field(default_factory=list)
     convictions_last_3_years: list[ConvictionRecord] = Field(default_factory=list)
+    licence_suspensions_last_6_years: list[LicenceSuspensionRecord] = Field(default_factory=list)
 
 
 class IntakeProfile(StrictModel):

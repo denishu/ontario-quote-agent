@@ -12,10 +12,17 @@
   "identity": {
     "legal_name": "REPLACE_WITH_YOUR_LEGAL_NAME",
     "date_of_birth": "1990-01-01",
+    "gender": "REPLACE_WITH_YOUR_GENDER",
+    "marital_status": "REPLACE_WITH_YOUR_MARITAL_STATUS",
     "licence_number": "REPLACE_WITH_YOUR_ON_LICENCE_NUMBER",
     "licence_province": "ON",
     "licence_class": "G",
-    "licensed_since": "2008-01-01"
+    "licence_status": "valid",
+    "licensed_since": "2008-01-01",
+    "g1_licence_date": "2008-01-01",
+    "g2_licence_date": "2008-10-01",
+    "full_g_licence_date": "2010-01-01",
+    "is_student_living_away_from_home": false
   },
   "contact_email": "REPLACE_WITH_YOUR_EMAIL@example.com",
   "contact_phone": "REPLACE_WITH_YOUR_PHONE",
@@ -42,19 +49,26 @@
       "make": "Toyota",
       "model": "Corolla",
       "ownership": "owned",
+      "new_or_used_at_purchase": "used",
+      "purchase_or_lease_date": "2020-06-01",
       "primary_use": "commute",
       "annual_km": 12000,
-      "commute_one_way_km": 15
+      "commute_one_way_km": 15,
+      "winter_tires": true,
+      "anti_theft_device": false,
+      "parking_type": "driveway"
     }
   ],
   "insurance_history": {
     "current_insurer": "REPLACE_WITH_CURRENT_INSURER_OR_NULL",
     "current_policy_expiry": null,
     "years_continuously_insured": 5,
+    "years_with_current_insurer": 5,
     "reason_for_shopping": "Comparing rates for the hackathon submission",
     "cancellations_last_3_years": [],
     "accidents_last_6_years": [],
-    "convictions_last_3_years": []
+    "convictions_last_3_years": [],
+    "licence_suspensions_last_6_years": []
   },
   "coverage_benchmark": {
     "effective_date": "2026-09-01",
