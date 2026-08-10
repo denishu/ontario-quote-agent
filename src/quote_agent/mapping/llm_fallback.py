@@ -12,8 +12,11 @@ back into the alias table), so keeping it cheap matters.
 import os
 
 from anthropic import Anthropic
+from dotenv import load_dotenv
 
 from quote_agent.mapping.fields import FIELDS
+
+load_dotenv()
 
 _MODEL = "claude-haiku-4-5-20251001"
 

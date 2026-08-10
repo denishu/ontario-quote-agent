@@ -19,6 +19,16 @@ class FieldSpec:
 FIELDS: tuple[FieldSpec, ...] = (
     # Identity
     FieldSpec("identity.legal_name", "Applicant's full legal name"),
+    FieldSpec(
+        "identity.first_name",
+        "Applicant's first name -- virtual field, not separately stored; "
+        "derived by splitting legal_name at the first whitespace when a form asks for it alone",
+    ),
+    FieldSpec(
+        "identity.last_name",
+        "Applicant's last name -- virtual field, not separately stored; "
+        "derived from the remainder of legal_name after the first name when a form asks for it alone",
+    ),
     FieldSpec("identity.date_of_birth", "Applicant's date of birth"),
     FieldSpec("identity.gender", "Applicant's gender, as offered by the form's own options"),
     FieldSpec("identity.marital_status", "Single, married, common law, etc."),

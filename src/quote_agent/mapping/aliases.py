@@ -8,13 +8,17 @@ here over time, leaving the LLM fallback for genuinely new phrasing.
 ALIASES: dict[str, str] = {
     # Identity
     "full name": "identity.legal_name",
-    "my name is": "identity.legal_name",
+    "first name": "identity.first_name",
+    "my name is": "identity.first_name",
+    "last name": "identity.last_name",
+    "my last name is": "identity.last_name",
     "gender": "identity.gender",
     "dob": "identity.date_of_birth",
     "date of birth": "identity.date_of_birth",
     "born": "identity.date_of_birth",
     "single married or common law": "identity.marital_status",
     "marital status": "identity.marital_status",
+    "marriage status": "identity.marital_status",
     "driver s licence": "identity.licence_number",
     "driver s license": "identity.licence_number",
     "my driver s licence number is": "identity.licence_number",
