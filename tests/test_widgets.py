@@ -1,3 +1,4 @@
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -10,6 +11,7 @@ from quote_agent.agents.widgets import (
     select_custom_dropdown,
     select_native,
     set_checkbox,
+    set_date,
 )
 
 FIXTURE_URL = (Path(__file__).parent / "fixtures" / "widgets.html").resolve().as_uri()
@@ -68,3 +70,31 @@ def test_adjust_stepper_decrements_to_target(page):
 def test_adjust_stepper_no_op_when_already_at_target(page):
     adjust_stepper(page, "#tickets-value", "#tickets-plus", "#tickets-minus", target=0)
     assert page.locator("#tickets-value").inner_text() == "0"
+
+
+def _set_date(page, target: date) -> None:
+    set_date(
+        page,
+        page.locator("#start-date"),
+        target,
+        header_selector="#cal-header",
+        prev_selector="#cal-prev",
+        next_selector="#cal-next",
+        day_container_selector="#cal-days",
+    )
+
+
+def test_set_date_within_the_currently_displayed_month(page):
+    _set_date(page, date(2026, 8, 20))
+    assert page.locator("#start-date").input_value() == "20-08-2026"
+
+
+def test_set_date_navigates_forward_to_a_later_month(page):
+    _set_date(page, date(2026, 10, 5))
+    assert page.locator("#start-date").input_value() == "05-10-2026"
+
+
+def test_set_date_navigates_backward_after_moving_forward(page):
+    _set_date(page, date(2026, 10, 5))  # move forward first
+    _set_date(page, date(2026, 8, 15))  # then back
+    assert page.locator("#start-date").input_value() == "15-08-2026"

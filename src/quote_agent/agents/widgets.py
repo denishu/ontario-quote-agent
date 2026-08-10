@@ -9,7 +9,14 @@ than one dispatcher, since widget-type detection belongs with the loop
 that reads the page, not hardcoded here.
 """
 
+import calendar
+import re
+from datetime import date
+
 from playwright.sync_api import Locator, Page
+
+_MONTH_NAMES = [calendar.month_name[i] for i in range(1, 13)]
+_YEAR_PATTERN = re.compile(r"\b(19|20)\d{2}\b")
 
 
 def fill_text(locator: Locator, value: str) -> None:
@@ -66,3 +73,54 @@ def adjust_stepper(page: Page, value_selector: str, plus_selector: str, minus_se
     step_locator = page.locator(plus_selector if target > current else minus_selector)
     for _ in range(step_count):
         step_locator.click()
+
+
+def _parse_month_year(text: str) -> tuple[int, int]:
+    lowered = text.lower()
+    for i, name in enumerate(_MONTH_NAMES, start=1):
+        if name.lower() in lowered:
+            month = i
+            break
+    else:
+        raise ValueError(f"Could not find a recognizable month name in {text!r}")
+
+    year_match = _YEAR_PATTERN.search(text)
+    if not year_match:
+        raise ValueError(f"Could not find a 4-digit year in {text!r}")
+    return month, int(year_match.group())
+
+
+def set_date(
+    page: Page,
+    field: Locator,
+    target: date,
+    header_selector: str,
+    prev_selector: str,
+    next_selector: str,
+    day_container_selector: str | None = None,
+) -> None:
+    """A calendar-popup date field -- seen on both ThinkInsure and Onlia,
+    where typing directly into the field doesn't register and a calendar
+    must be opened and navigated instead.
+
+    Clicks the field to open the calendar, reads the currently displayed
+    month/year from header_selector (expects a recognizable month name
+    plus a 4-digit year, e.g. "August 2026"), clicks prev_selector/
+    next_selector however many times are needed to reach the target
+    month, then clicks the matching day number. day_container_selector
+    scopes the day-number search (recommended, to avoid matching an
+    unrelated number elsewhere on the page); omit it to search the whole
+    page.
+    """
+    field.click()
+
+    header_text = page.locator(header_selector).inner_text()
+    current_month, current_year = _parse_month_year(header_text)
+    delta = (target.year - current_year) * 12 + (target.month - current_month)
+
+    step_locator = page.locator(next_selector if delta > 0 else prev_selector)
+    for _ in range(abs(delta)):
+        step_locator.click()
+
+    day_scope = page.locator(day_container_selector) if day_container_selector else page
+    day_scope.get_by_text(str(target.day), exact=True).first.click()

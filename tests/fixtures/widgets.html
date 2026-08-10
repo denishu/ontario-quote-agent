@@ -55,6 +55,59 @@
     <button type="button" id="tickets-plus">+</button>
   </div>
 
+  <!-- Date picker: typing does not register, only clicking a calendar day does -->
+  <label for="start-date">Start Date</label>
+  <input id="start-date" type="text" placeholder="dd-mm-yyyy" readonly>
+  <div id="calendar" style="display:none;">
+    <button type="button" id="cal-prev">Prev</button>
+    <span id="cal-header"></span>
+    <button type="button" id="cal-next">Next</button>
+    <div id="cal-days"></div>
+  </div>
+
+<script>
+  const CAL_MONTHS = [
+    { name: 'August', number: 8, year: 2026, days: 31 },
+    { name: 'September', number: 9, year: 2026, days: 30 },
+    { name: 'October', number: 10, year: 2026, days: 31 },
+  ];
+  let calMonthIndex = 0;
+
+  function renderCalendar() {
+    const m = CAL_MONTHS[calMonthIndex];
+    document.getElementById('cal-header').textContent = `${m.name} ${m.year}`;
+    const daysDiv = document.getElementById('cal-days');
+    daysDiv.innerHTML = '';
+    for (let d = 1; d <= m.days; d++) {
+      const link = document.createElement('a');
+      link.href = '#';
+      link.textContent = String(d);
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const dd = String(d).padStart(2, '0');
+        const mm = String(m.number).padStart(2, '0');
+        document.getElementById('start-date').value = `${dd}-${mm}-${m.year}`;
+        document.getElementById('calendar').style.display = 'none';
+      });
+      daysDiv.appendChild(link);
+    }
+  }
+
+  document.getElementById('start-date').addEventListener('click', () => {
+    document.getElementById('calendar').style.display = 'block';
+  });
+  document.getElementById('cal-prev').addEventListener('click', () => {
+    calMonthIndex = Math.max(0, calMonthIndex - 1);
+    renderCalendar();
+  });
+  document.getElementById('cal-next').addEventListener('click', () => {
+    calMonthIndex = Math.min(CAL_MONTHS.length - 1, calMonthIndex + 1);
+    renderCalendar();
+  });
+
+  renderCalendar();
+</script>
+
 <script>
   const trigger = document.getElementById('licence-status-trigger');
   const list = document.getElementById('licence-status-list');
