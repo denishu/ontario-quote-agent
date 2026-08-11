@@ -91,14 +91,26 @@ _CAPTCHA_INDICATORS = (
     "unusual traffic",
     "automated queries",
     "prove you're not a robot",
+    # A CAPTCHA challenge is only one form of anti-automation barrier -- an
+    # edge/WAF layer (Akamai, Cloudflare, etc.) can reject a request outright
+    # before any application content, including a CAPTCHA, ever loads.
+    # Confirmed on a real site (Aviva): a fresh headless request was flatly
+    # rejected with an Akamai edge "Access Denied" page and no CAPTCHA
+    # language at all -- the original indicator list entirely missed it,
+    # silently looking like an empty, fillable page instead of a hard block.
+    "access denied",
+    "you don't have permission to access",
+    "request blocked",
+    "attention required",
 )
 
 
 def detect_captcha(page_text: str) -> bool:
-    """True if page_text contains a common CAPTCHA / bot-wall indicator.
-    Heuristic, not exhaustive — a site with a barrier that doesn't use any
-    of these phrases won't be caught, and that's a known limitation rather
-    than something worth chasing exhaustively.
+    """True if page_text contains a common CAPTCHA / bot-wall indicator --
+    a CAPTCHA challenge specifically, or a broader edge/WAF access-denied
+    block. Heuristic, not exhaustive — a site with a barrier that doesn't
+    use any of these phrases won't be caught, and that's a known
+    limitation rather than something worth chasing exhaustively.
     """
     normalized = page_text.casefold()
     return any(indicator in normalized for indicator in _CAPTCHA_INDICATORS)

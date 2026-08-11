@@ -47,6 +47,22 @@ def test_captcha_indicators_are_detected(text):
     assert detect_captcha(text)
 
 
+@pytest.mark.parametrize(
+    "text",
+    [
+        # Confirmed on a real site (Aviva): a fresh headless request was
+        # flatly rejected by an Akamai edge/WAF layer, no CAPTCHA language
+        # at all -- a real anti-automation barrier the original indicator
+        # list entirely missed.
+        "Access Denied\nYou don't have permission to access \"http://example.com/\" on this server.",
+        "Request blocked. We have detected unusual activity from your device.",
+        "Attention Required! | Cloudflare",
+    ],
+)
+def test_waf_block_pages_are_detected_as_captcha(text):
+    assert detect_captcha(text)
+
+
 def test_normal_page_text_is_not_flagged_as_captcha():
     assert not detect_captcha("Your annual premium is $1,234.56")
 
