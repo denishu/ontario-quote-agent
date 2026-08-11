@@ -1,5 +1,6 @@
 from quote_agent.agents.detect import WidgetType, detect_widget_type
 from quote_agent.agents.flow import FlowResult, StepResult, find_next_action, run_flow_steps
+from quote_agent.agents.generic_flow import make_generic_flow
 from quote_agent.agents.loop import FillReport, discover_fields, fill_visible_fields
 from quote_agent.agents.policy import (
     CaptchaDetected,
@@ -37,6 +38,7 @@ __all__ = [
     "find_next_action",
     "guard_against_sensitive_action",
     "is_sensitive_action",
+    "make_generic_flow",
     "run_flow_steps",
     "run_web_attempt",
     "run_with_bounded_retry",
