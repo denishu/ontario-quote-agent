@@ -26,6 +26,7 @@ from quote_agent.agents.widgets import (
     set_checkbox,
 )
 from quote_agent.mapping import get_field_value, resolve_field
+from quote_agent.mapping.value_aliases import resolve_display_value
 from quote_agent.models import IntakeProfile
 
 
@@ -104,10 +105,18 @@ def _apply(page: Page, control: Locator, widget_type: WidgetType, value: object)
     if widget_type is WidgetType.TEXT:
         fill_text(control, str(value))
     elif widget_type is WidgetType.NATIVE_SELECT:
-        select_native(control, str(value))
+        # <option> children exist in the DOM whether or not the select is
+        # open, so the display value can be resolved up front.
+        select_native(control, resolve_display_value(control, str(value)))
     elif widget_type is WidgetType.CUSTOM_DROPDOWN:
+        # NOTE: unlike NATIVE_SELECT/RADIO, a custom dropdown's options
+        # often don't exist in the DOM until the trigger is clicked open,
+        # so resolve_display_value can't run beforehand the same way --
+        # this still passes the raw stored value through. A real
+        # stored-vs-displayed mismatch here (the same class of bug this
+        # module exists to fix) remains a known gap.
         select_custom_dropdown(page, control, str(value))
     elif widget_type is WidgetType.CHECKBOX:
         set_checkbox(control, bool(value))
     elif widget_type is WidgetType.RADIO:
-        click_radio_or_toggle(control, str(value))
+        click_radio_or_toggle(control, resolve_display_value(control, str(value)))

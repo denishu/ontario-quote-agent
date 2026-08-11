@@ -36,7 +36,7 @@ def make_intake() -> IntakeProfile:
                 make="Toyota",
                 model="Corolla",
                 ownership="owned",
-                primary_use="pleasure",
+                primary_use="commute",
                 annual_km=12000,
                 winter_tires=True,
             )
@@ -69,7 +69,9 @@ def test_fill_visible_fields_fills_known_aliased_fields_without_llm(page):
     assert page.locator("#first-name").input_value() == "Jane"
     assert page.locator("#province").input_value() == "ON"
     assert page.locator("#winter-tires").is_checked()
-    assert page.locator('#vehicle-use-group [role="radio"][aria-checked="true"]').inner_text() == "Pleasure"
+    # stored value is "commute", displayed option is "Commuting" -- not a
+    # substring match, only works via resolve_display_value's alias table
+    assert page.locator('#vehicle-use-group [role="radio"][aria-checked="true"]').inner_text() == "Commuting"
 
     assert report.filled["First Name"] == "identity.first_name"
     assert report.filled["Province"] == "address.province"
