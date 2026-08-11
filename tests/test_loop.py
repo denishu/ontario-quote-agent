@@ -136,6 +136,47 @@ def test_discover_fields_does_not_guess_a_control_for_a_decorative_label(page):
     assert pairs["I agree to the"].get_attribute("id") == "consent-checkbox"
 
 
+def test_discover_fields_finds_a_controls_own_aria_label(page):
+    # "#company-name" has no <label> at all -- its only identifying text is
+    # its own aria-label attribute (confirmed on a real site, Aviva: its
+    # actual Year/Make/Model <select> elements are marked up exactly this
+    # way). Must be discoverable even with no separate <label> element.
+    pairs = dict(discover_fields(page))
+
+    assert "Company name" in pairs
+    assert pairs["Company name"].get_attribute("id") == "company-name"
+
+
+def test_discover_fields_does_not_double_count_a_labeled_controls_aria_label(page):
+    # "#first-name" is already discovered via its real <label for=...>.
+    # If it also happened to carry its own aria-label, it must not show up
+    # a second time under that aria-label text too.
+    page.evaluate("document.getElementById('first-name').setAttribute('aria-label', 'First Name')")
+    pairs = discover_fields(page)
+
+    matches = [label for label, control in pairs if control.get_attribute("id") == "first-name"]
+    assert matches == ["First Name"]
+
+
+def test_fill_visible_fields_isolates_a_single_field_interaction_failure(page):
+    # "Impossible to satisfy" resolves fine and classifies as a normal
+    # RADIO widget, but its only option's text will never match any real
+    # value -- confirmed on a real site (Aviva) that this kind of failure,
+    # left unguarded, crashes the entire fill_visible_fields call and
+    # takes every other field on the page down with it. A short timeout
+    # keeps the guaranteed-to-fail click from hanging the test.
+    page.set_default_timeout(1000)
+    intake = make_intake()
+
+    def llm_fallback(label: str) -> str | None:
+        return "vehicles[].primary_use" if label == "Impossible to satisfy" else None
+
+    report = fill_visible_fields(page, intake, llm_fallback=llm_fallback)
+
+    assert "Impossible to satisfy" in report.failed_to_fill
+    assert report.filled["First Name"] == "identity.first_name"  # other fields still completed
+
+
 def test_fill_visible_fields_reports_genuinely_unresolved_labels(page):
     page.evaluate(
         """() => {

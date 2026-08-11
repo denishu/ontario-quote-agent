@@ -91,6 +91,20 @@
     <label>Terms of Use and Privacy Policy.</label>
   </div>
 
+  <!-- A control with its own aria-label and no separate <label> element at
+       all (mirrors a real site's Year/Make/Model <select> elements, e.g.
+       aria-label="Select the model of your car", no for=, no wrapping
+       <label>) -- confirmed to be completely invisible to discovery
+       before this was handled. -->
+  <input id="company-name" type="text" aria-label="Company name" placeholder="Company">
+
+  <!-- Guaranteed-to-fail widget: a radio group whose only option never
+       matches any real value, used to test that one field's interaction
+       failure doesn't take down the rest of the page's fill attempt. -->
+  <div role="radiogroup" aria-label="Impossible to satisfy" id="impossible-group">
+    <span role="radio" aria-checked="false" data-value="only-option" class="chip">Only Option</span>
+  </div>
+
   <!-- Multi-select cards: independently toggled, not mutually exclusive like a radio group -->
   <div id="additional-drivers">
     <div class="driver-card" data-selected="false">Person A</div>
