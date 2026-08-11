@@ -3,14 +3,20 @@ tag and ARIA attributes.
 
 Deliberately conservative: only classifies the cases that are reliably
 inferable from one element in isolation (native select, checkbox, ARIA
-combobox, plain text, a single radio option). Steppers, date pickers, and
-autocomplete fields are structurally ambiguous from one element alone --
-a stepper's +/- buttons carry no distinguishing role, and a plain-looking
-text input might be a date picker (readonly) or a custom autocomplete
-(autocomplete="off") that silently ignores direct typing, which we
-confirmed firsthand on real sites. Those return UNKNOWN rather than a
+combobox, plain text, a single radio option). Steppers and date pickers
+are structurally ambiguous from one element alone -- a stepper's +/-
+buttons carry no distinguishing role, and a plain-looking readonly text
+input might be a date picker that silently ignores direct typing, which
+we confirmed firsthand on real sites. Those return UNKNOWN rather than a
 wrong guess -- the caller is expected to supply an explicit type hint for
 those cases instead.
+
+NOTE: autocomplete="off" was tried as a signal for "this is a custom
+JS-driven suggestion widget" but confirmed against a real site (Onlia) to
+be unreliable -- ordinary text fields there use it too, just to disable
+the browser's own native autofill, with no relation to whether a custom
+dropdown exists behind the field. Removed rather than left in producing
+false positives on plain fillable fields.
 """
 
 from enum import Enum
@@ -49,8 +55,6 @@ def detect_widget_type(locator: Locator) -> WidgetType:
     if tag in ("input", "textarea") and input_type in _TEXT_LIKE_INPUT_TYPES:
         if locator.get_attribute("readonly") is not None:
             return WidgetType.UNKNOWN  # likely a date picker -- typing doesn't register
-        if locator.get_attribute("autocomplete") == "off":
-            return WidgetType.UNKNOWN  # likely a custom JS-driven autocomplete
         return WidgetType.TEXT
 
     return WidgetType.UNKNOWN

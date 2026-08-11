@@ -49,8 +49,16 @@ def test_readonly_date_field_is_unknown_not_text(page):
     assert detect_widget_type(page.locator("#start-date")) == WidgetType.UNKNOWN
 
 
-def test_autocomplete_off_field_is_unknown_not_text(page):
-    assert detect_widget_type(page.locator("#address")) == WidgetType.UNKNOWN
+def test_autocomplete_off_field_is_treated_as_text(page):
+    # Confirmed against a real saved page (Onlia): autocomplete="off" is
+    # not a reliable signal for "this is a custom JS-driven suggestion
+    # widget" -- plain First/Last Name and Licence Number fields there use
+    # it too, purely to disable the browser's own native autofill. A
+    # single element gives no reliable way to tell those apart from a
+    # genuine type-ahead widget like this fixture's address field, so this
+    # is now treated as plain text -- a known, accepted trade-off (see
+    # test_loop.py for the address-specific consequence).
+    assert detect_widget_type(page.locator("#address")) == WidgetType.TEXT
 
 
 def test_stepper_button_is_unknown(page):

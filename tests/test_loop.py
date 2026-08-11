@@ -79,18 +79,31 @@ def test_fill_visible_fields_fills_known_aliased_fields_without_llm(page):
     assert report.filled["Vehicle use"] == "vehicles[].primary_use"
 
 
-def test_fill_visible_fields_reports_resolved_but_unfillable_widgets(page):
-    # "Start Date" and "Street Address" both resolve via known aliases, but
-    # their widgets (readonly date field, autocomplete=off address) can't
-    # be classified from a single element -- they must be reported, not
-    # silently skipped or incorrectly filled as plain text.
+def test_fill_visible_fields_reports_resolved_but_unfillable_readonly_widget(page):
+    # "Start Date" resolves via a known alias, but its widget (a readonly
+    # field where a calendar popup, not typing, sets the value) can't be
+    # classified as fillable from a single element -- it must be reported,
+    # not silently skipped or incorrectly filled as plain text.
     intake = make_intake()
     report = fill_visible_fields(page, intake)
 
     assert "Start Date" in report.skipped_unknown_widget
-    assert "Street Address" in report.skipped_unknown_widget
     assert page.locator("#start-date").input_value() == ""
-    assert page.locator("#address").input_value() == ""
+
+
+def test_fill_visible_fields_types_raw_value_into_autocomplete_field(page):
+    # "Street Address" resolves via a known alias and, since autocomplete
+    # can no longer be used as an UNKNOWN signal (see detect.py), is
+    # treated as plain text: the raw stored value gets typed in directly.
+    # For this fixture's simulated widget that doesn't click a suggestion,
+    # so the result isn't necessarily a "valid" selected address -- a
+    # known, accepted trade-off now that autocomplete="off" has been
+    # confirmed unreliable as a distinguishing signal on real sites.
+    intake = make_intake()
+    report = fill_visible_fields(page, intake)
+
+    assert report.filled["Street Address"] == "address.street"
+    assert page.locator("#address").input_value() == "123 Main St"
 
 
 def test_fill_visible_fields_reports_genuinely_unresolved_labels(page):
