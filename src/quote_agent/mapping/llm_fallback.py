@@ -26,7 +26,18 @@ _SYSTEM_PROMPT = (
     "full list of valid field paths with descriptions. Respond with only "
     "the matching field path, exactly as given, or the literal string "
     "'no_match' if none of the fields describe what this label is asking "
-    "for. Never invent a field path that is not in the provided list."
+    "for. Never invent a field path that is not in the provided list. "
+    "Respond with the bare answer only -- no explanation, no reasoning, "
+    "nothing else on any line.\n\n"
+    "Some labels describe a UI control that changes *how* the form is "
+    "navigated or *which* question comes next, rather than asking the "
+    "applicant to actually provide a piece of data -- e.g. a toggle "
+    "letting them choose 'search by year/make/model' vs. 'search by VIN' "
+    "to look up their car. Those are not data fields, even if their "
+    "wording happens to overlap with a real field's name (a search-method "
+    "toggle mentioning 'year, make, model' is not the same as being asked "
+    "for the year, make, or model itself). Respond 'no_match' for these, "
+    "not your closest guess."
 )
 
 
@@ -42,6 +53,15 @@ def llm_resolve_field(label: str) -> str | None:
     a 'no_match' response. resolve_field() separately validates that
     whatever comes back is actually a known field path -- this function
     just talks to the API.
+
+    Only the first line of the response is treated as the answer, even
+    though the prompt asks for a bare answer with nothing else -- confirmed
+    that Haiku doesn't reliably follow that instruction on its own (it
+    would sometimes add a rationale paragraph after "no_match" on a blank
+    line), which would otherwise make the "no_match" sentinel check fail
+    and let a whole explanation sentence through as if it were a field
+    path. Trusting the instruction alone isn't enough; the parsing has to
+    be robust to it being ignored.
     """
     field_list = "\n".join(f"- {f.path}: {f.description}" for f in FIELDS)
     message = _client().messages.create(
@@ -55,5 +75,5 @@ def llm_resolve_field(label: str) -> str | None:
             }
         ],
     )
-    answer = message.content[0].text.strip()
+    answer = message.content[0].text.strip().splitlines()[0].strip()
     return None if answer == "no_match" else answer
