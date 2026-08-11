@@ -30,22 +30,31 @@ to headless=False (which would just be choosing the mode that happens not
 to get blocked, uncomfortably close to evasion) this stays an explicit
 opt-in the caller has to choose, on their own real desktop session, with
 that trade-off in view.
+
+When headless=False, this also pauses at the consent checkpoint instead
+of terminating there: the actual locked rule is "automation must never
+click buy/sign/declaration/bind itself," not "stop forever the moment one
+is seen." With a human actually present and watching (headed mode), it
+prints what needs doing, waits for the page to change, and resumes
+automation on whatever comes next -- it still never checks that box or
+clicks Continue itself. In headless mode there's no one to hand off to,
+so it terminates at MANUAL_HANDOFF immediately, same as before.
 """
 
 from datetime import date as _date
 
 from playwright.sync_api import sync_playwright
 
-from quote_agent.agents.flow import find_next_action
+from quote_agent.agents.flow import find_next_action, pause_for_human
 from quote_agent.agents.loop import discover_fields, fill_visible_fields
-from quote_agent.agents.policy import guard_against_sensitive_action
+from quote_agent.agents.policy import guard_against_sensitive_action, is_sensitive_action
 from quote_agent.agents.web import NonQuoteOutcome, QuoteObtained
 from quote_agent.agents.widgets import resolve_autocomplete, set_date
 from quote_agent.models import IntakeProfile
 from quote_agent.models.status import QuoteStatus
 
 FORM_URL = "https://app.onlia.ca/#/auto/personal-info?Affinity_Group=Onlia&utm_content=auto_quote_button"
-_MAX_STEPS = 8
+_MAX_STEPS = 30
 
 # Confirmed against the live page: real address suggestions and calendar
 # day cells, respectively -- see resolve_autocomplete/set_date call sites
@@ -130,7 +139,16 @@ def onlia_personal_info_flow(intake: IntakeProfile, *, headless: bool = True) ->
                 next_action = find_next_action(page)
                 if next_action is not None:
                     label = next_action.inner_text().strip() or "Continue"
-                    guard_against_sensitive_action(label, raw_evidence_text=page.inner_text("body"))
+                    if is_sensitive_action(label):
+                        if not headless:
+                            changed = pause_for_human(
+                                page,
+                                f"The next action ('{label}') requires a human decision. "
+                                "Please complete it yourself in the browser.",
+                            )
+                            if changed:
+                                continue
+                        guard_against_sensitive_action(label, raw_evidence_text=page.inner_text("body"))
                     next_action.click()
                     page.wait_for_timeout(1000)
                     continue
@@ -148,7 +166,19 @@ def onlia_personal_info_flow(intake: IntakeProfile, *, headless: bool = True) ->
                 # Nothing left to fill and no visible way to advance. Expected,
                 # not a failure: Onlia's Continue/"Start My Quote" button stays
                 # hidden until the Terms of Use/Privacy Policy checkbox is
-                # checked, which this flow never does on its own.
+                # checked, which this flow never does on its own. In headed
+                # mode, a real human is presumably watching -- hand off to
+                # them and resume once they've done it, rather than quitting.
+                if not headless:
+                    changed = pause_for_human(
+                        page,
+                        "Nothing left to fill automatically -- this is likely Onlia's Terms of "
+                        "Use/Privacy Policy consent checkpoint. Please review the form, check that "
+                        "box yourself if you agree, and click Continue.",
+                    )
+                    if changed:
+                        continue
+
                 return NonQuoteOutcome(
                     status=QuoteStatus.MANUAL_HANDOFF,
                     raw_evidence_text=page.inner_text("body"),
