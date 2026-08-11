@@ -113,6 +113,28 @@ def test_fill_visible_fields_reports_genuinely_unresolved_labels(page):
     assert page.locator("#mystery-field").input_value() == ""
 
 
+def test_fill_visible_fields_ignores_invisible_recaptcha_infrastructure(page):
+    # Confirmed against a real saved page: passive/invisible reCAPTCHA
+    # (a script tag, a corner badge, a hidden response field -- present
+    # on nearly every modern site, whether or not any challenge is ever
+    # shown) makes "recaptcha" appear in the raw HTML source without any
+    # visible text a human would actually see. Must not false-positive.
+    page.evaluate(
+        """() => {
+            document.body.innerHTML += `
+                <script src="https://www.google.com/recaptcha/api.js" async></script>
+                <div class="grecaptcha-badge" style="visibility: hidden;"></div>
+                <textarea id="g-recaptcha-response" class="g-recaptcha-response" style="display:none;"></textarea>
+            `;
+        }"""
+    )
+    intake = make_intake()
+
+    report = fill_visible_fields(page, intake)  # must not raise CaptchaDetected
+
+    assert page.locator("#first-name").input_value() == "Jane"
+
+
 def test_fill_visible_fields_raises_on_captcha_without_filling_anything(page):
     page.evaluate(
         "() => { document.body.innerHTML += '<div>Please complete the CAPTCHA below</div>'; }"

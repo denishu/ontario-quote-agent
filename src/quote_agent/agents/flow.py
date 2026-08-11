@@ -131,7 +131,7 @@ def run_flow_steps(
             break
 
         action_label = next_action.inner_text().strip() or "Continue"
-        guard_against_sensitive_action(action_label, raw_evidence_text=page.content())
+        guard_against_sensitive_action(action_label, raw_evidence_text=page.inner_text("body"))
 
         before = _page_fingerprint(page)
         next_action.click()

@@ -77,11 +77,20 @@ def fill_visible_fields(
 ) -> FillReport:
     """Observe the current page and fill in whatever it can confidently
     resolve and interact with. Raises CaptchaDetected immediately if the
-    page shows a bot-wall indicator -- never attempts to work around it,
-    and never fills anything if one is present.
+    page's *visible* text shows a bot-wall indicator -- never attempts to
+    work around it, and never fills anything if one is present.
+
+    Checks rendered text (page.inner_text), not page.content() (raw HTML
+    source): confirmed against a real saved page that passive/invisible
+    reCAPTCHA infrastructure (script tags, a corner badge, a hidden
+    response field) makes "recaptcha" appear in the HTML source of nearly
+    every modern site regardless of whether any challenge is actually
+    being presented. Checking visible text only catches an actual
+    human-facing block, not the mere presence of the product.
     """
-    if detect_captcha(page.content()):
-        raise CaptchaDetected(raw_evidence_text=page.content())
+    visible_text = page.inner_text("body")
+    if detect_captcha(visible_text):
+        raise CaptchaDetected(raw_evidence_text=visible_text)
 
     report = FillReport()
 
