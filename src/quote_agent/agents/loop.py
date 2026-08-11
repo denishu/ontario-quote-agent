@@ -92,24 +92,43 @@ def discover_fields(page: Page) -> list[tuple[str, Locator]]:
     at all. A starting point validated against the local fixture -- real
     sites will likely need this refined as their specific patterns are
     discovered.
+
+    Each candidate element is handled defensively: confirmed on a real
+    site (Aviva, a page with cascading dropdowns re-rendering live) that
+    an element enumerated at the start of this function can go stale
+    (detached from the DOM) by the time it's actually processed a moment
+    later, which otherwise hangs for a full Playwright timeout and then
+    crashes discovery entirely -- taking every other field on the page
+    down with it, the same class of problem already fixed for the actual
+    fill step. A field that's mid-re-render right now is fairly treated
+    as not currently discoverable rather than a fatal error; the next
+    call (the next loop iteration in fill_visible_fields's caller) will
+    find it once the page has settled.
     """
     pairs: list[tuple[str, Locator]] = []
 
     for label in page.locator("label").all():
-        control = _resolve_labeled_control(label)
-        if control is None:
-            continue
-        text = label.inner_text().strip()
-        if text:
-            pairs.append((text, control))
+        try:
+            control = _resolve_labeled_control(label)
+            if control is None:
+                continue
+            text = label.inner_text().strip()
+            if not text:
+                continue
             # Marks the control as already discovered so the aria-label scan
             # below doesn't also pick it up as a second, redundant entry.
             control.evaluate(f"el => el.setAttribute('{_DISCOVERED_MARKER}', '1')")
+        except Exception:
+            continue
+        pairs.append((text, control))
 
     for group in page.locator('[role="radiogroup"]').all():
-        if not group.is_visible():
+        try:
+            if not group.is_visible():
+                continue
+            text = (group.get_attribute("aria-label") or "").strip()
+        except Exception:
             continue
-        text = (group.get_attribute("aria-label") or "").strip()
         if text:
             pairs.append((text, group))
 
@@ -124,9 +143,12 @@ def discover_fields(page: Page) -> list[tuple[str, Locator]]:
         f"{tag}[aria-label]:not([{_DISCOVERED_MARKER}])" for tag in ("input", "select", "textarea")
     )
     for control in page.locator(aria_label_selector).all():
-        if not control.is_visible():
+        try:
+            if not control.is_visible():
+                continue
+            text = (control.get_attribute("aria-label") or "").strip()
+        except Exception:
             continue
-        text = (control.get_attribute("aria-label") or "").strip()
         if text:
             pairs.append((text, control))
 
