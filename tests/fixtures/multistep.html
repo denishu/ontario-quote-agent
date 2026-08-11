@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Multi-step fixture</title></head>
+<body>
+
+  <div id="step-1">
+    <label for="q1">First Name</label>
+    <input id="q1" type="text">
+    <button type="submit" id="next-1">Continue</button>
+  </div>
+
+  <div id="step-2" style="display:none;">
+    <label for="q2">Postal Code</label>
+    <input id="q2" type="text">
+    <button type="submit" id="next-2">Continue</button>
+  </div>
+
+  <div id="step-3" style="display:none;">
+    <p>All done, no more questions.</p>
+  </div>
+
+<script>
+  document.getElementById('next-1').addEventListener('click', () => {
+    document.getElementById('step-1').style.display = 'none';
+    document.getElementById('step-2').style.display = 'block';
+    history.pushState({}, '', '#step-2');
+  });
+  document.getElementById('next-2').addEventListener('click', () => {
+    document.getElementById('step-2').style.display = 'none';
+    document.getElementById('step-3').style.display = 'block';
+    history.pushState({}, '', '#step-3');
+  });
+</script>
+</body>
+</html>

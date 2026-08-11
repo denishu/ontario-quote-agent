@@ -51,13 +51,15 @@ def discover_fields(page: Page) -> list[tuple[str, Locator]]:
     for label in page.locator("label").all():
         control_id = label.get_attribute("for")
         control = page.locator(f"#{control_id}") if control_id else label.locator("input, select, textarea")
-        if control.count() == 0:
+        if control.count() == 0 or not control.first.is_visible():
             continue
         text = label.inner_text().strip()
         if text:
             pairs.append((text, control.first))
 
     for group in page.locator('[role="radiogroup"]').all():
+        if not group.is_visible():
+            continue
         text = (group.get_attribute("aria-label") or "").strip()
         if text:
             pairs.append((text, group))
