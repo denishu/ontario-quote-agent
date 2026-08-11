@@ -137,9 +137,9 @@ def resolve_autocomplete(
     Canada Post's AddressComplete widget) -- typing alone doesn't set a
     valid value, a suggestion must be clicked. Presses each character of
     query as a real keystroke, waits for at least one suggestion to
-    appear, then clicks the one matching match_text (substring,
-    case-sensitive as typed) or just the first suggestion if match_text
-    is None.
+    appear, then clicks the one matching match_text (whitespace- and
+    case-insensitive substring) or just the first suggestion if
+    match_text is None.
 
     Deliberately uses press_sequentially rather than fill: confirmed
     against the real live Onlia page that AddressComplete's suggestion
@@ -148,6 +148,15 @@ def resolve_autocomplete(
     right-looking text either way -- fill() alone leaves the field
     "typed but never selected," which is exactly the stuck state this
     function exists to avoid.
+
+    Raises ValueError immediately (rather than a 30s Playwright timeout)
+    if match_text doesn't match any suggestion -- confirmed against a real
+    run that a strict substring match silently hangs instead of failing
+    fast when e.g. a stored postal code has no space ("L4S1A8") but the
+    widget displays one ("L4S 1A8"); normalizing whitespace before
+    comparing avoids that specific mismatch, and failing fast on a
+    genuine non-match surfaces the real problem immediately instead of a
+    generic timeout.
     """
     field.click()  # confirmed necessary against the real widget: press_sequentially alone
     # (without a real prior click/focus) never triggered the suggestion search on Onlia's page
@@ -162,7 +171,15 @@ def resolve_autocomplete(
     # settled. A short pause lets in-flight responses finish arriving first.
     page.wait_for_timeout(400)
     if match_text:
-        suggestions.get_by_text(match_text, exact=False).first.click()
+        target = re.sub(r"\s+", "", match_text).lower()
+        texts = suggestions.all_inner_texts()
+        index = next(
+            (i for i, text in enumerate(texts) if target in re.sub(r"\s+", "", text).lower()),
+            None,
+        )
+        if index is None:
+            raise ValueError(f"No suggestion matched {match_text!r}. Available suggestions: {texts!r}")
+        suggestions.nth(index).click()
     else:
         suggestions.first.click()
     # The widget processes a selection asynchronously (confirmed against the real

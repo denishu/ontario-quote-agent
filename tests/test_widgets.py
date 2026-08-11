@@ -104,7 +104,7 @@ def test_set_date_navigates_backward_after_moving_forward(page):
 
 def test_resolve_autocomplete_picks_first_suggestion_by_default(page):
     resolve_autocomplete(page, page.locator("#address"), "123 Main", "#address-suggestions li")
-    assert page.locator("#address").input_value() == "123 Main St, Toronto, ON"
+    assert page.locator("#address").input_value() == "123 Main St, Toronto, ON M5V 3A8"
 
 
 def test_resolve_autocomplete_matches_specific_suggestion(page):
@@ -115,7 +115,33 @@ def test_resolve_autocomplete_matches_specific_suggestion(page):
         "#address-suggestions li",
         match_text="Ottawa",
     )
-    assert page.locator("#address").input_value() == "123 Main St, Ottawa, ON"
+    assert page.locator("#address").input_value() == "123 Main St, Ottawa, ON K1P 1J1"
+
+
+def test_resolve_autocomplete_matches_despite_whitespace_difference(page):
+    # Confirmed against a real run: a stored postal code with no space
+    # ("M5V3A8") failed to match a suggestion displaying one ("M5V 3A8")
+    # under a strict substring match, hanging for a 30s timeout instead of
+    # matching. match_text is compared whitespace- and case-insensitively.
+    resolve_autocomplete(
+        page,
+        page.locator("#address"),
+        "123 Main",
+        "#address-suggestions li",
+        match_text="m5v3a8",
+    )
+    assert page.locator("#address").input_value() == "123 Main St, Toronto, ON M5V 3A8"
+
+
+def test_resolve_autocomplete_raises_fast_on_no_match(page):
+    with pytest.raises(ValueError, match="No suggestion matched"):
+        resolve_autocomplete(
+            page,
+            page.locator("#address"),
+            "123 Main",
+            "#address-suggestions li",
+            match_text="Nowhere Land",
+        )
 
 
 def test_select_multiple_cards_selects_only_the_named_ones(page):
