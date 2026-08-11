@@ -28,11 +28,15 @@ from quote_agent.models import IntakeProfile, RegistryEntry
 from quote_agent.models.status import QuoteStatus
 
 
-def make_generic_flow(entry: RegistryEntry) -> WebFlow:
+def make_generic_flow(entry: RegistryEntry, *, headless: bool = True) -> WebFlow:
     """Build a WebFlow closed over one registry entry's quote_url. A
     factory rather than a flow taking (entry, intake) directly, so the
     result still matches the plain WebFlow signature run_web_attempt
     expects: Callable[[IntakeProfile], QuoteObtained | NonQuoteOutcome].
+
+    headless defaults to True, same reasoning as onlia.py: never silently
+    pick whichever mode happens to dodge a site's bot detection -- a
+    caller opts into headed mode explicitly, on their own real desktop.
     """
     if entry.quote_url is None:
         raise ValueError(f"{entry.registry_id} has no quote_url to navigate to")
@@ -40,7 +44,7 @@ def make_generic_flow(entry: RegistryEntry) -> WebFlow:
 
     def flow(intake: IntakeProfile) -> QuoteObtained | NonQuoteOutcome:
         with sync_playwright() as pw:
-            browser = pw.chromium.launch(headless=True)
+            browser = pw.chromium.launch(headless=headless)
             page = browser.new_page()
             try:
                 page.goto(quote_url, timeout=60000)
