@@ -110,11 +110,11 @@
     "distribution_type": "broker",
     "product_scope": "standard_PPA",
     "distinct_rate_source_id": "onlia-broker",
-    "quote_url": "https://www.onlia.ca/car-insurance/quote",
+    "quote_url": "https://app.onlia.ca/#/auto/personal-info?Affinity_Group=Onlia&utm_content=auto_quote_button",
     "public_phone_route": null,
     "licensed_intermediary": "Onlia",
     "requirements": ["licence", "VIN"],
-    "automation_notes": "Fully digital brokerage -- markets an instant online quote and purchase flow in about 3 minutes, no broker call typically required. Backed by a joint venture between Achmea and Fairfax Financial; the exact underwriting legal entity was not confirmed from public research, so capture whatever the actual quote/disclosure page names.",
+    "automation_notes": "Fully digital brokerage -- markets an instant online quote and purchase flow in about 3 minutes, no broker call typically required. Backed by a joint venture between Achmea and Fairfax Financial; the exact underwriting legal entity was not confirmed from public research, so capture whatever the actual quote/disclosure page names. quote_url updated to the real form (a different subdomain, app.onlia.ca, behind a client-side route) -- www.onlia.ca/car-insurance/quote is only a marketing landing page. Confirmed live: the personal-info step is a Typeform-style form (Enter to advance, not a visible Continue button), its address field is Canada Post's AddressComplete widget, its start-date field is an ngx-bootstrap calendar, and its Continue/\"Start My Quote\" button is gated behind a required Terms of Use/Privacy Policy checkbox that automation must never check -- see src/quote_agent/agents/sites/onlia.py, which automates everything up to that checkpoint and always ends in manual_handoff there. Also confirmed live: Onlia's invisible reCAPTCHA v3 fails headless Chromium's fingerprint (a real \"Captcha validation failed\" page, correctly caught as CaptchaDetected) -- this flow only gets past it in headed mode.",
     "status": "unresolved",
     "evidence_url": "https://www.onlia.ca/car-insurance"
   },
