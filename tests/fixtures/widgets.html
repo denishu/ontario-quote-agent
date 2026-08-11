@@ -144,7 +144,12 @@
 <script>
   const addressInput = document.getElementById('address');
   const addressSuggestions = document.getElementById('address-suggestions');
-  addressInput.addEventListener('input', () => {
+  // Real address-autocomplete widgets (e.g. Onlia's, backed by Canada
+  // Post's AddressComplete) were confirmed to search only on real
+  // keystroke events, never on a single bulk value-set -- so this only
+  // listens for 'keyup', not 'input', to make sure a fix here actually
+  // has to type character-by-character rather than just set .value once.
+  addressInput.addEventListener('keyup', () => {
     const query = addressInput.value;
     addressSuggestions.innerHTML = '';
     if (query.length > 0) {

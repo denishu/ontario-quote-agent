@@ -133,19 +133,43 @@ def resolve_autocomplete(
     suggestion_selector: str,
     match_text: str | None = None,
 ) -> None:
-    """A type-ahead autocomplete (e.g. Onlia's address field) -- typing
-    alone doesn't set a valid value, a suggestion must be clicked. Types
-    query, waits for at least one suggestion to appear, then clicks the
-    one matching match_text (substring, case-sensitive as typed) or just
-    the first suggestion if match_text is None.
+    """A type-ahead autocomplete (e.g. Onlia's address field, backed by
+    Canada Post's AddressComplete widget) -- typing alone doesn't set a
+    valid value, a suggestion must be clicked. Presses each character of
+    query as a real keystroke, waits for at least one suggestion to
+    appear, then clicks the one matching match_text (substring,
+    case-sensitive as typed) or just the first suggestion if match_text
+    is None.
+
+    Deliberately uses press_sequentially rather than fill: confirmed
+    against the real live Onlia page that AddressComplete's suggestion
+    search is wired to actual keystroke events and never fires on a
+    single bulk value-set, even though the field ends up holding the
+    right-looking text either way -- fill() alone leaves the field
+    "typed but never selected," which is exactly the stuck state this
+    function exists to avoid.
     """
-    field.fill(query)
+    field.click()  # confirmed necessary against the real widget: press_sequentially alone
+    # (without a real prior click/focus) never triggered the suggestion search on Onlia's page
+    field.press_sequentially(query, delay=80)
     suggestions = page.locator(suggestion_selector)
     suggestions.first.wait_for(state="visible")
+    # Each keystroke fires its own debounced search request (confirmed against the
+    # real widget: typing "1 Yonge St" alone fired ~10 separate lookups, one per
+    # character), and they can resolve out of order. The list can still be
+    # mid-repopulation from an earlier response right as the *last* one appears --
+    # clicking immediately risked landing before the final, authoritative list
+    # settled. A short pause lets in-flight responses finish arriving first.
+    page.wait_for_timeout(400)
     if match_text:
         suggestions.get_by_text(match_text, exact=False).first.click()
     else:
         suggestions.first.click()
+    # The widget processes a selection asynchronously (confirmed against the real
+    # widget: reading the field's value/validity state immediately after the click
+    # still showed the raw typed text, not the selected suggestion -- it needed a
+    # moment to finish before the field actually reflected the selection).
+    page.wait_for_timeout(1000)
 
 
 def select_multiple_cards(container: Locator, values: list[str]) -> None:
