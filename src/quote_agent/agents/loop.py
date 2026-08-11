@@ -37,6 +37,48 @@ class FillReport:
     skipped_unknown_widget: list[str] = field(default_factory=list)  # labels whose widget type is ambiguous
 
 
+def _resolve_labeled_control(label: Locator) -> Locator | None:
+    """Resolve the control a <label> actually refers to. Tries `for="..."`
+    first, then the wrapping <label><input>...</label> pattern.
+
+    If `for="..."` is present but doesn't resolve to anything visible,
+    falls back to the nearest visible, non-hidden form control in the
+    label's own parent element. That fallback is scoped to only this
+    case -- a `for=` that was set but is broken -- rather than to any
+    label without a resolvable control, because those are different
+    situations: confirmed on a real site (Onlia) where a label's
+    `for="postal_code"` pointed at a hidden decoy input that doesn't even
+    carry that id (likely stale after a refactor), silently orphaning the
+    label from the real, visible text field sitting right next to it in
+    the same row -- a broken reference that clearly meant to point at
+    *something*. A label with no `for=` and no wrapped control at all
+    (e.g. plain legal-disclaimer text sitting near an unrelated checkbox)
+    isn't that -- guessing a nearby control for it risks pairing
+    decorative text with a control it was never meant to label, so that
+    case is left unresolved rather than guessed at.
+    """
+    control_id = label.get_attribute("for")
+    if control_id:
+        by_id = label.page.locator(f"#{control_id}")
+        if by_id.count() > 0 and by_id.first.is_visible():
+            return by_id.first
+
+        nearby = label.locator("xpath=..").locator("input:not([type=hidden]), select, textarea")
+        for i in range(nearby.count()):
+            candidate = nearby.nth(i)
+            if candidate.is_visible():
+                return candidate
+        return None
+
+    wrapped = label.locator("input, select, textarea")
+    for i in range(wrapped.count()):
+        candidate = wrapped.nth(i)
+        if candidate.is_visible():
+            return candidate
+
+    return None
+
+
 def discover_fields(page: Page) -> list[tuple[str, Locator]]:
     """Find (label text, control locator) pairs for whatever's currently
     on the page: both <label for="..."> associations and wrapping
@@ -49,13 +91,12 @@ def discover_fields(page: Page) -> list[tuple[str, Locator]]:
     pairs: list[tuple[str, Locator]] = []
 
     for label in page.locator("label").all():
-        control_id = label.get_attribute("for")
-        control = page.locator(f"#{control_id}") if control_id else label.locator("input, select, textarea")
-        if control.count() == 0 or not control.first.is_visible():
+        control = _resolve_labeled_control(label)
+        if control is None:
             continue
         text = label.inner_text().strip()
         if text:
-            pairs.append((text, control.first))
+            pairs.append((text, control))
 
     for group in page.locator('[role="radiogroup"]').all():
         if not group.is_visible():

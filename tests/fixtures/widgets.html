@@ -70,6 +70,27 @@
   <input id="address" type="text" placeholder="Please enter and select street address" autocomplete="off">
   <ul id="address-suggestions" style="display:none;"></ul>
 
+  <!-- Mislinked label: for="postal_code" points at nothing (mirrors a real
+       site where a hidden decoy control never actually carried that id,
+       likely stale after a refactor). The real, visible field sits right
+       next to it in the same row with no `for=` link of its own. -->
+  <div id="mislinked-row">
+    <label for="postal_code">My alternate address is</label>
+    <input formcontrolname="postal_code" type="hidden" value="">
+    <input id="alt-street-status" type="hidden" value="Empty">
+    <input id="alt-street-address" type="text" placeholder="Please enter and select street address">
+  </div>
+
+  <!-- Decorative label with no for= and no wrapped control at all (mirrors
+       a real site's "Terms of Use and Privacy Policy." text sitting next
+       to an unrelated checkbox it doesn't actually label). Must stay
+       undiscoverable rather than get guessed-paired with that checkbox. -->
+  <div id="decorative-label-row">
+    <input id="consent-checkbox" type="checkbox">
+    <label for="consent-checkbox">I agree to the</label>
+    <label>Terms of Use and Privacy Policy.</label>
+  </div>
+
   <!-- Multi-select cards: independently toggled, not mutually exclusive like a radio group -->
   <div id="additional-drivers">
     <div class="driver-card" data-selected="false">Person A</div>

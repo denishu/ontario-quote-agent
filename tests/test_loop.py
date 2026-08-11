@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from playwright.sync_api import sync_playwright
 
-from quote_agent.agents import CaptchaDetected, fill_visible_fields
+from quote_agent.agents import CaptchaDetected, discover_fields, fill_visible_fields
 from quote_agent.models import (
     Address,
     Consent,
@@ -61,8 +61,12 @@ def page():
 def test_fill_visible_fields_fills_known_aliased_fields_without_llm(page):
     intake = make_intake()
 
+    known_aliased_labels = {"First Name", "Province", "Do you have winter tires?", "Vehicle use"}
+
     def failing_llm(label: str) -> str | None:
-        raise AssertionError(f"llm_fallback should not be needed for {label!r}")
+        if label in known_aliased_labels:
+            raise AssertionError(f"llm_fallback should not be needed for {label!r}")
+        return None  # other fixture fields (e.g. the dangling-label case) may legitimately need it
 
     report = fill_visible_fields(page, intake, llm_fallback=failing_llm)
 
@@ -104,6 +108,32 @@ def test_fill_visible_fields_types_raw_value_into_autocomplete_field(page):
 
     assert report.filled["Street Address"] == "address.street"
     assert page.locator("#address").input_value() == "123 Main St"
+
+
+def test_discover_fields_falls_back_past_a_dangling_for_reference(page):
+    # "My alternate address is" has for="postal_code", which matches no
+    # element's id at all (mirrors a real site's stale reference to a
+    # hidden decoy control). discover_fields must still find the real,
+    # visible sibling text field instead of silently dropping the label --
+    # and must not itself be fooled into pairing the label with either of
+    # the two hidden decoy inputs sitting in between.
+    pairs = dict(discover_fields(page))
+
+    assert "My alternate address is" in pairs
+    control = pairs["My alternate address is"]
+    assert control.get_attribute("id") == "alt-street-address"
+    assert control.is_visible()
+
+
+def test_discover_fields_does_not_guess_a_control_for_a_decorative_label(page):
+    # "Terms of Use and Privacy Policy." has no for= and wraps no control
+    # -- unlike the dangling-for= case above, there's no evidence this
+    # label was ever meant to point at a specific control, so it must not
+    # get guess-paired with the unrelated checkbox sitting next to it.
+    pairs = dict(discover_fields(page))
+
+    assert "Terms of Use and Privacy Policy." not in pairs
+    assert pairs["I agree to the"].get_attribute("id") == "consent-checkbox"
 
 
 def test_fill_visible_fields_reports_genuinely_unresolved_labels(page):
