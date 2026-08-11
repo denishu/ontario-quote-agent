@@ -43,7 +43,7 @@ def detect_widget_type(locator: Locator) -> WidgetType:
     role = locator.get_attribute("role")
     if role == "combobox":
         return WidgetType.CUSTOM_DROPDOWN
-    if role == "radio":
+    if role in ("radio", "radiogroup"):
         return WidgetType.RADIO
 
     if tag in ("input", "textarea") and input_type in _TEXT_LIKE_INPUT_TYPES:

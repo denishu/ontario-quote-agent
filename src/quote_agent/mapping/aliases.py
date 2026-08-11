@@ -40,6 +40,8 @@ ALIASES: dict[str, str] = {
     "postal code": "address.postal_code",
     "my address is": "address.street",
     "please enter and select street address": "address.street",
+    "street address": "address.street",
+    "province": "address.province",
     # Vehicle
     "vehicle ownership": "vehicles[].ownership",
     "do you currently own lease or finance this vehicle": "vehicles[].ownership",
@@ -47,6 +49,7 @@ ALIASES: dict[str, str] = {
     "when did you purchase your vehicle": "vehicles[].purchase_or_lease_date",
     "at the time of purchase was your vehicle new or used": "vehicles[].new_or_used_at_purchase",
     "what do you use your vehicle for": "vehicles[].primary_use",
+    "vehicle use": "vehicles[].primary_use",
     "what is your daily commute one way in km": "vehicles[].commute_one_way_km",
     "distance to work school or transit one way": "vehicles[].commute_one_way_km",
     "how many km driven per year": "vehicles[].annual_km",

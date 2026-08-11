@@ -30,6 +30,10 @@ def test_detects_custom_dropdown_by_combobox_role(page):
     assert detect_widget_type(page.locator("#licence-status-trigger")) == WidgetType.CUSTOM_DROPDOWN
 
 
+def test_detects_radio_group_by_radiogroup_role(page):
+    assert detect_widget_type(page.locator("#vehicle-use-group")) == WidgetType.RADIO
+
+
 def test_detects_checkbox(page):
     assert detect_widget_type(page.locator("#winter-tires")) == WidgetType.CHECKBOX
 
