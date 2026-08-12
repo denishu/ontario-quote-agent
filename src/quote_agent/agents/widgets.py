@@ -18,9 +18,33 @@ from playwright.sync_api import Locator, Page
 _MONTH_NAMES = [calendar.month_name[i] for i in range(1, 13)]
 _YEAR_PATTERN = re.compile(r"\b(19|20)\d{2}\b")
 
+_ISO_DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+_DATE_PLACEHOLDER_FORMATS = {
+    "mm/dd/yyyy": "%m/%d/%Y",
+    "dd/mm/yyyy": "%d/%m/%Y",
+    "mm-dd-yyyy": "%m-%d-%Y",
+    "dd-mm-yyyy": "%d-%m-%Y",
+}
+
 
 def fill_text(locator: Locator, value: str) -> None:
-    """A plain text input."""
+    """A plain text input.
+
+    An ISO "YYYY-MM-DD" value -- the format every date field in this
+    schema is already stored in -- is reformatted to match the field's
+    own placeholder when that placeholder names a different date layout.
+    Confirmed on a real site (Aviva): its coverage-start field carries no
+    type="date" of its own (so it's filled as plain text, same as any
+    other field), but its placeholder ("MM/DD/YYYY") names a different
+    layout than ISO -- Playwright's fill() still succeeds with no
+    exception, but the widget's own validation silently rejects the
+    value and shows it as invalid.
+    """
+    if _ISO_DATE_PATTERN.match(value):
+        placeholder = (locator.get_attribute("placeholder") or "").strip().lower()
+        fmt = _DATE_PLACEHOLDER_FORMATS.get(placeholder)
+        if fmt:
+            value = date.fromisoformat(value).strftime(fmt)
     locator.fill(value)
 
 

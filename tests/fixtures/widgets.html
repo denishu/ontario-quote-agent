@@ -29,6 +29,13 @@
   <label for="annual-km">Annual kilometres</label>
   <input id="annual-km" type="number">
 
+  <!-- Plain text input standing in for a non-native date widget (no
+       type="date" of its own) whose placeholder names a non-ISO layout --
+       confirmed on a real site (Aviva): its coverage-start field silently
+       rejects an ISO "YYYY-MM-DD" value since it expects "MM/DD/YYYY". -->
+  <label for="mmddyyyy-date">Previous policy date</label>
+  <input id="mmddyyyy-date" type="text" placeholder="MM/DD/YYYY">
+
   <!-- Native select -->
   <label for="province">Province</label>
   <select id="province">

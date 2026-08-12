@@ -43,6 +43,21 @@ def test_fill_text_on_native_date_input(page):
     assert page.locator("#coverage-start").input_value() == "2026-09-01"
 
 
+def test_fill_text_reformats_iso_date_to_match_a_non_iso_placeholder(page):
+    # Confirmed on a real site (Aviva): a plain text field standing in for
+    # a non-native date widget can carry a placeholder naming a different
+    # layout ("MM/DD/YYYY") than the ISO format this schema stores dates
+    # in -- filling the raw ISO string succeeds with no exception but gets
+    # silently rejected by the widget's own validation.
+    fill_text(page.locator("#mmddyyyy-date"), "2026-09-01")
+    assert page.locator("#mmddyyyy-date").input_value() == "09/01/2026"
+
+
+def test_fill_text_leaves_non_date_values_untouched_regardless_of_placeholder(page):
+    fill_text(page.locator("#mmddyyyy-date"), "not a date")
+    assert page.locator("#mmddyyyy-date").input_value() == "not a date"
+
+
 def test_select_native_matches_by_visible_label(page):
     select_native(page.locator("#province"), "Ontario")
     assert page.locator("#province").input_value() == "ON"
