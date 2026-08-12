@@ -335,6 +335,18 @@
     text-transform: uppercase;
   }
 
+  .evidence-screenshot {
+    display: block;
+    width: 100%;
+    max-height: 160px;
+    object-fit: cover;
+    object-position: top;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    margin-top: 10px;
+    cursor: zoom-in;
+  }
+
   .btn-delete {
     background: transparent;
     border: none;
@@ -510,8 +522,15 @@ function renderCard(entry, result) {
     body = `<div class="idle-copy">Not yet attempted this run.</div>`;
   }
 
+  const screenshot = result && result.evidence.screenshot_ref
+    ? `<a href="/${result.evidence.screenshot_ref}" target="_blank" rel="noopener">
+         <img class="evidence-screenshot" src="/${result.evidence.screenshot_ref}" alt="Redacted screenshot evidence for ${entry.brand_or_program}" loading="lazy">
+       </a>`
+    : "";
+
   const evidence = result
-    ? `<div class="evidence-row">
+    ? `${screenshot}
+       <div class="evidence-row">
          <div class="evidence-ref"><span class="tag">local only</span>${result.evidence.artifact_ref}</div>
          <button class="btn-delete" data-registry-id="${entry.registry_id}" title="Delete this result and its evidence file">Delete</button>
        </div>`
