@@ -34,6 +34,15 @@ def test_fill_text(page):
     assert page.locator("#first-name").input_value() == "Jane"
 
 
+def test_fill_text_on_native_date_input(page):
+    # Confirmed on a real site (Aviva): an ISO "YYYY-MM-DD" string --
+    # exactly the format every date field in this schema is already
+    # stored in -- fills a real type="date" input directly, no conversion
+    # needed.
+    fill_text(page.locator("#coverage-start"), "2026-09-01")
+    assert page.locator("#coverage-start").input_value() == "2026-09-01"
+
+
 def test_select_native_matches_by_visible_label(page):
     select_native(page.locator("#province"), "Ontario")
     assert page.locator("#province").input_value() == "ON"

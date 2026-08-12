@@ -57,6 +57,14 @@ def test_readonly_date_field_is_unknown_not_text(page):
     assert detect_widget_type(page.locator("#start-date")) == WidgetType.UNKNOWN
 
 
+def test_native_date_input_is_treated_as_text(page):
+    # Unlike the readonly case above (a custom JS date picker where typing
+    # silently does nothing), a real type="date" input has no such
+    # ambiguity -- confirmed on a real site (Aviva) that Playwright's
+    # fill() works directly against one given an ISO "YYYY-MM-DD" string.
+    assert detect_widget_type(page.locator("#coverage-start")) == WidgetType.TEXT
+
+
 def test_autocomplete_off_field_is_treated_as_text(page):
     # Confirmed against a real saved page (Onlia): autocomplete="off" is
     # not a reliable signal for "this is a custom JS-driven suggestion

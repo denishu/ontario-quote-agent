@@ -17,6 +17,12 @@
   <label for="first-name">First Name</label>
   <input id="first-name" type="text" placeholder="First Name">
 
+  <!-- Native date input: unlike a readonly text field standing in for a
+       custom JS date picker, this has no ambiguity -- Playwright's fill()
+       works directly against it given an ISO "YYYY-MM-DD" string. -->
+  <label for="coverage-start">Coverage start date</label>
+  <input id="coverage-start" type="date">
+
   <!-- Native select -->
   <label for="province">Province</label>
   <select id="province">

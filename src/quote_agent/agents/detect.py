@@ -17,13 +17,21 @@ be unreliable -- ordinary text fields there use it too, just to disable
 the browser's own native autofill, with no relation to whether a custom
 dropdown exists behind the field. Removed rather than left in producing
 false positives on plain fillable fields.
+
+A native <input type="date"> is treated as plain TEXT, not UNKNOWN like a
+readonly date-picker text field -- confirmed on a real site (Aviva) that
+Playwright's fill() works directly against one when given an ISO
+"YYYY-MM-DD" string, which is exactly the format every date field in this
+schema is already stored in. Different from the readonly case above:
+that one's ambiguous because typing silently does nothing on a custom JS
+widget; a real type="date" input has no such ambiguity.
 """
 
 from enum import Enum
 
 from playwright.sync_api import Locator
 
-_TEXT_LIKE_INPUT_TYPES = {None, "text", "email", "tel"}
+_TEXT_LIKE_INPUT_TYPES = {None, "text", "email", "tel", "date"}
 
 
 class WidgetType(str, Enum):
