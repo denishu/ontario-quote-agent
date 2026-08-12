@@ -1,1 +1,40 @@
-[]
+[
+  {
+    "registry_id": "aviva-direct",
+    "status": "manual_handoff",
+    "returned_legal_underwriter": null,
+    "premium_annual": null,
+    "premium_monthly": null,
+    "returned_coverage": null,
+    "coverage_variance": [],
+    "discounts": [],
+    "evidence": {
+      "timestamp": "2026-08-12T08:24:00Z",
+      "source_url": "https://myaviva.avivainsurance.ca/avivaquoter/bol/auto/driver",
+      "public_phone_route": "1-855-788-9090",
+      "artifact_ref": "evidence/aviva-direct-20260812T082400Z.txt"
+    },
+    "confidence": "low",
+    "failure_reason": "Full intake flow completes successfully (vehicle, use, and driver details all confirmed filled, real quote number issued), but the terminal step offers only \"Email me my quote\" or \"Buy now\" -- no on-page premium/coverage display, PDF, or other scrapable quote artifact exists.",
+    "next_action": "Requires a human to either complete the purchase (out of scope -- this tool never binds a policy) or retrieve the emailed quote manually (out of scope -- no email-scraping capability)."
+  },
+  {
+    "registry_id": "onlia-broker",
+    "status": "manual_handoff",
+    "returned_legal_underwriter": null,
+    "premium_annual": null,
+    "premium_monthly": null,
+    "returned_coverage": null,
+    "coverage_variance": [],
+    "discounts": [],
+    "evidence": {
+      "timestamp": "2026-08-12T08:24:00Z",
+      "source_url": "https://app.onlia.ca/#/auto/personal-info",
+      "public_phone_route": null,
+      "artifact_ref": "evidence/onlia-broker-20260812T082400Z.txt"
+    },
+    "confidence": "low",
+    "failure_reason": "Automation correctly fills every step of the personal-info flow (name, DOB, address via AddressComplete, licence, vehicle) but the \"Start My Quote\" button is gated behind a required Terms of Use / Privacy Policy consent checkbox.",
+    "next_action": "Requires a human to review and check the consent checkbox themselves -- this tool never checks a consent/agreement box on the user's behalf."
+  }
+]

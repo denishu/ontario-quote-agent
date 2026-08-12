@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QuoteON — Ontario Auto Insurance Quote Comparison</title>
+<style>
+  :root {
+    --bg: #f6f7fb;
+    --surface: #ffffff;
+    --border: #e2e5ee;
+    --text: #1a1d29;
+    --text-muted: #61667a;
+    --accent: #3454d1;
+    --accent-soft: #eaeeff;
+    --green: #1a8754;
+    --green-soft: #e6f6ee;
+    --amber: #a3660a;
+    --amber-soft: #fdf2df;
+    --gray: #61667a;
+    --gray-soft: #eef0f5;
+    --red: #b3261e;
+    --red-soft: #fbe9e8;
+    --shadow: 0 1px 2px rgba(20, 24, 40, 0.04), 0 4px 16px rgba(20, 24, 40, 0.06);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161f;
+      --surface: #1c1f2b;
+      --border: #2b2f3f;
+      --text: #eceef5;
+      --text-muted: #9298ad;
+      --accent: #7c93f5;
+      --accent-soft: #232a4a;
+      --green: #4fd190;
+      --green-soft: #163629;
+      --amber: #eab35c;
+      --amber-soft: #3a2e14;
+      --gray: #9298ad;
+      --gray-soft: #262a38;
+      --red: #f28b85;
+      --red-soft: #3a1e1d;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 4px 20px rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+
+  .page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  header.hero {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .brand-mark {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), #7c93f5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: white;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .brand h1 {
+    font-size: 22px;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  .brand p {
+    margin: 2px 0 0;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+
+  .safety-note {
+    max-width: 360px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 13px;
+    color: var(--text-muted);
+    box-shadow: var(--shadow);
+  }
+
+  .safety-note strong {
+    color: var(--text);
+    display: block;
+    margin-bottom: 4px;
+    font-size: 13px;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    box-shadow: var(--shadow);
+  }
+
+  .stat .value {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .stat .label {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .card-title h2 {
+    margin: 0;
+    font-size: 16px;
+  }
+
+  .card-title .group {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 4px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  .badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+
+  .badge.status-quoted { background: var(--green-soft); color: var(--green); }
+  .badge.status-quoted .badge-dot { background: var(--green); }
+  .badge.status-pending { background: var(--amber-soft); color: var(--amber); }
+  .badge.status-pending .badge-dot { background: var(--amber); }
+  .badge.status-blocked { background: var(--red-soft); color: var(--red); }
+  .badge.status-blocked .badge-dot { background: var(--red); }
+  .badge.status-idle { background: var(--gray-soft); color: var(--gray); }
+  .badge.status-idle .badge-dot { background: var(--gray); }
+
+  .distribution {
+    display: inline-block;
+    font-size: 11px;
+    color: var(--text-muted);
+    background: var(--gray-soft);
+    padding: 2px 8px;
+    border-radius: 6px;
+    text-transform: capitalize;
+    width: fit-content;
+  }
+
+  .premium {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .premium .period {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-left: 3px;
+  }
+
+  .underwriter {
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+
+  .reason {
+    font-size: 13px;
+    color: var(--text);
+    background: var(--gray-soft);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+
+  .reason .label {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 3px;
+  }
+
+  .next-action {
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+
+  .evidence-ref {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    border-top: 1px dashed var(--border);
+    padding-top: 10px;
+    margin-top: auto;
+  }
+
+  .evidence-ref .tag {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-family: -apple-system, sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 5px;
+    margin-right: 6px;
+    text-transform: uppercase;
+  }
+
+  .idle-copy {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  footer {
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-size: 12.5px;
+    color: var(--text-muted);
+    text-align: center;
+  }
+
+  .load-error {
+    background: var(--red-soft);
+    color: var(--red);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 13.5px;
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div class="brand">
+        <div class="brand-mark">Q</div>
+        <div>
+          <h1>QuoteON</h1>
+          <p>Ontario auto insurance, compared across every source it tries.</p>
+        </div>
+      </div>
+      <div class="safety-note">
+        <strong>What this tool never does</strong>
+        Never submits payment, clicks buy/sign/declaration, or binds a policy. Never bypasses a CAPTCHA or consent gate. A blocked or manual step is reported honestly, not worked around.
+      </div>
+    </header>
+
+    <div id="stats" class="stats"></div>
+    <div id="cards" class="cards"></div>
+
+    <footer>
+      Generated from <code>data/registry.json</code> and <code>data/results.json</code> — this page never displays applicant data, only source metadata and quote outcomes.
+    </footer>
+  </div>
+
+<script>
+const STATUS_GROUPS = {
+  quoted_comparable: "quoted",
+  quoted_non_comparable: "quoted",
+  estimate_only: "quoted",
+  callback_required: "pending",
+  manual_handoff: "pending",
+  specialty_only: "pending",
+  ineligible: "blocked",
+  affinity_restricted: "blocked",
+  not_currently_writing: "blocked",
+  blocked: "blocked",
+  unreachable: "blocked",
+  duplicate_rate_source: "idle",
+  unresolved: "idle",
+};
+
+const STATUS_LABELS = {
+  quoted_comparable: "Quoted",
+  quoted_non_comparable: "Quoted (coverage differs)",
+  estimate_only: "Estimate only",
+  callback_required: "Callback required",
+  manual_handoff: "Manual step required",
+  ineligible: "Ineligible",
+  affinity_restricted: "Affinity restricted",
+  specialty_only: "Specialty program",
+  duplicate_rate_source: "Duplicate source",
+  not_currently_writing: "Not writing business",
+  blocked: "Blocked",
+  unreachable: "Unreachable",
+  unresolved: "Not yet attempted",
+};
+
+const DISTRIBUTION_LABELS = {
+  direct: "Direct writer",
+  agent: "Captive agent",
+  broker: "Broker",
+  aggregator: "Aggregator",
+  affinity: "Affinity program",
+  MGA_program: "MGA program",
+  mutual: "Mutual",
+  residual: "Residual market",
+};
+
+function money(n) {
+  return n.toLocaleString("en-CA", { style: "currency", currency: "CAD", maximumFractionDigits: 0 });
+}
+
+function badge(status) {
+  const group = STATUS_GROUPS[status] || "idle";
+  const label = STATUS_LABELS[status] || status;
+  return `<span class="badge status-${group}"><span class="badge-dot"></span>${label}</span>`;
+}
+
+function renderStats(registry, resultByRegistryId) {
+  const total = registry.length;
+  let quoted = 0, pending = 0, blocked = 0, idle = 0;
+  for (const entry of registry) {
+    const result = resultByRegistryId.get(entry.registry_id);
+    const status = result ? result.status : "unresolved";
+    const group = STATUS_GROUPS[status] || "idle";
+    if (group === "quoted") quoted++;
+    else if (group === "pending") pending++;
+    else if (group === "blocked") blocked++;
+    else idle++;
+  }
+  const stats = [
+    { value: total, label: "Sources tracked" },
+    { value: quoted, label: "Quotes obtained" },
+    { value: pending, label: "Manual step required" },
+    { value: idle, label: "Not yet attempted" },
+  ];
+  document.getElementById("stats").innerHTML = stats
+    .map((s) => `<div class="stat"><div class="value">${s.value}</div><div class="label">${s.label}</div></div>`)
+    .join("");
+}
+
+function renderCard(entry, result) {
+  const status = result ? result.status : "unresolved";
+  const distribution = DISTRIBUTION_LABELS[entry.distribution_type] || entry.distribution_type;
+
+  let body = "";
+  if (result && (result.status === "quoted_comparable" || result.status === "quoted_non_comparable" || result.status === "estimate_only")) {
+    body = `
+      <div class="premium">${money(result.premium_annual)}<span class="period">/ year</span></div>
+      ${result.returned_legal_underwriter ? `<div class="underwriter">Underwritten by ${result.returned_legal_underwriter}</div>` : ""}
+      ${result.coverage_variance && result.coverage_variance.length
+        ? `<div class="reason"><div class="label">Differs from your benchmark</div>${result.coverage_variance.join(", ")}</div>`
+        : ""}
+    `;
+  } else if (result) {
+    body = `
+      <div class="reason"><div class="label">Why it stopped here</div>${result.failure_reason}</div>
+      ${result.next_action ? `<div class="next-action">${result.next_action}</div>` : ""}
+    `;
+  } else {
+    body = `<div class="idle-copy">Not yet attempted this run.</div>`;
+  }
+
+  const evidence = result
+    ? `<div class="evidence-ref"><span class="tag">local only</span>${result.evidence.artifact_ref}</div>`
+    : "";
+
+  return `
+    <div class="card">
+      <div class="card-top">
+        <div class="card-title">
+          <h2>${entry.brand_or_program}</h2>
+          <div class="group">${entry.insurer_group}</div>
+        </div>
+        ${badge(status)}
+      </div>
+      <div class="distribution">${distribution}</div>
+      ${body}
+      ${evidence}
+    </div>
+  `;
+}
+
+async function main() {
+  try {
+    const [registry, results] = await Promise.all([
+      fetch("../data/registry.json").then((r) => r.json()),
+      fetch("../data/results.json").then((r) => r.json()),
+    ]);
+
+    const resultByRegistryId = new Map();
+    for (const r of results) {
+      resultByRegistryId.set(r.registry_id, r); // last attempt wins if there's more than one
+    }
+
+    renderStats(registry, resultByRegistryId);
+    document.getElementById("cards").innerHTML = registry
+      .map((entry) => renderCard(entry, resultByRegistryId.get(entry.registry_id)))
+      .join("");
+  } catch (err) {
+    document.getElementById("cards").innerHTML =
+      `<div class="load-error">Couldn't load data/registry.json or data/results.json (${err.message}). ` +
+      `Serve this page over http:// from the repo root, e.g. <code>python -m http.server</code>, not as a file:// URL.</div>`;
+  }
+}
+
+main();
+</script>
+</body>
+</html>

@@ -16,5 +16,7 @@ def test_registry_has_valid_unique_entries():
     assert len(registry_ids) == len(set(registry_ids))  # no duplicate registry_ids
 
 
-def test_results_starts_empty():
-    assert load_results() == []
+def test_results_reference_valid_registry_ids():
+    registry_ids = {e.registry_id for e in load_registry()}
+    for result in load_results():
+        assert result.registry_id in registry_ids
