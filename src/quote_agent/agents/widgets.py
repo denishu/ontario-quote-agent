@@ -24,12 +24,40 @@ def fill_text(locator: Locator, value: str) -> None:
     locator.fill(value)
 
 
-def select_native(locator: Locator, value: str) -> None:
+def select_native(locator: Locator, value: str, timeout_s: float = 10.0) -> None:
     """A real <select> element. Matches by visible option text, not the
     underlying option value, since the mapping layer deals in human-facing
     values (e.g. "Ontario"), not implementation details (e.g. "ON").
+
+    Matches case- and whitespace-insensitively rather than using
+    Locator.select_option's own strict exact match -- confirmed on a real
+    site (Aviva) that a stored value ("Toyota") and a select's real
+    option text ("TOYOTA") can differ only in case, which a strict match
+    silently never finds.
+
+    Also waits for the select to actually have more than a lone
+    placeholder option before giving up, up to timeout_s -- confirmed on
+    the same real site that a cascading select (e.g. Make, which only
+    populates once a Year is chosen) can start out with just one option
+    and fill in asynchronously; giving up immediately would treat
+    "hasn't populated yet" the same as "genuinely no match." Once real
+    options exist, a genuine non-match fails immediately rather than
+    waiting out the rest of the budget.
     """
-    locator.select_option(label=value)
+    target = value.strip().casefold()
+    elapsed = 0.0
+    poll_interval_s = 0.25
+
+    while True:
+        options = locator.locator("option").all_inner_texts()
+        match = next((opt for opt in options if opt.strip().casefold() == target), None)
+        if match is not None:
+            locator.select_option(label=match)
+            return
+        if len(options) > 1 or elapsed >= timeout_s:
+            raise ValueError(f"No option matched {value!r} (case/whitespace-insensitive). Available: {options!r}")
+        locator.page.wait_for_timeout(poll_interval_s * 1000)
+        elapsed += poll_interval_s
 
 
 def select_custom_dropdown(page: Page, trigger: Locator, value: str) -> None:

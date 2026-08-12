@@ -39,6 +39,22 @@ def test_select_native_matches_by_visible_label(page):
     assert page.locator("#province").input_value() == "ON"
 
 
+def test_select_native_matches_case_insensitively_after_waiting_for_options(page):
+    # "#cascading-make" starts with only a placeholder option and fills in
+    # asynchronously 300ms later with real options in a different case
+    # ("TOYOTA") than a stored value would realistically be ("Toyota") --
+    # confirmed on a real site (Aviva) that a strict, immediate,
+    # case-sensitive match fails on exactly this combination.
+    select_native(page.locator("#cascading-make"), "Toyota")
+    assert page.locator("#cascading-make").input_value() == "TOYOTA"
+
+
+def test_select_native_raises_fast_once_populated_with_no_match(page):
+    page.wait_for_timeout(400)  # let the cascading options populate first
+    with pytest.raises(ValueError, match="No option matched"):
+        select_native(page.locator("#cascading-make"), "Nissan")
+
+
 def test_select_custom_dropdown(page):
     select_custom_dropdown(page, page.locator("#licence-status-trigger"), "Suspended")
     assert page.locator("#licence-status-trigger").inner_text() == "Suspended"
