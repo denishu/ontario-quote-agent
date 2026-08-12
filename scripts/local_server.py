@@ -1,7 +1,20 @@
 """Local dev server: serves the static web/ files (same as `python -m
-http.server`) plus one JSON API endpoint, POST /api/parse-quote, so
-web/paste-quote.html can run the real extract-and-compare pipeline
-without an Anthropic API key ever touching browser code.
+http.server`) plus two JSON API endpoints:
+
+  POST   /api/parse-quote        -- extract + compare a pasted quote page
+  DELETE /api/results/<id>       -- one-click delete, per the challenge
+                                     brief's own requirement ("a one-click
+                                     delete function... delete hackathon
+                                     quote data after judging unless the
+                                     participant explicitly chooses
+                                     otherwise"). Removes the result from
+                                     data/results.json and its evidence
+                                     file(s) -- a real delete, not just
+                                     hiding the card.
+
+So web/paste-quote.html and the delete button on each QuoteON card can
+run the real pipeline without an Anthropic API key ever touching browser
+code.
 
 Deliberately built on the standard library's http.server rather than a
 new framework dependency (Flask, FastAPI, etc.) -- this project's own
@@ -28,6 +41,7 @@ import sys
 from http.server import SimpleHTTPRequestHandler
 from pathlib import Path
 from socketserver import TCPServer
+from urllib.parse import unquote
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
@@ -119,6 +133,39 @@ class Handler(SimpleHTTPRequestHandler):
                 "skipped": skipped,
             },
         )
+
+    def do_DELETE(self):
+        prefix = "/api/results/"
+        if not self.path.startswith(prefix):
+            self.send_error(404)
+            return
+
+        registry_id = unquote(self.path[len(prefix):])
+        results = load_results()
+        matching = [r for r in results if r.registry_id == registry_id]
+        remaining = [r for r in results if r.registry_id != registry_id]
+
+        if not matching:
+            self._send_json(404, {"error": f"No result found for registry_id={registry_id!r}"})
+            return
+
+        save_results(remaining)
+
+        # A real delete, not just hiding the card -- also removes the
+        # evidence file(s) this result pointed at, so nothing sensitive
+        # keeps sitting on disk once its result is gone. Tolerant of a
+        # file that's already missing (e.g. deleted by hand already).
+        evidence_removed = []
+        for result in matching:
+            for ref in (result.evidence.artifact_ref, result.evidence.screenshot_ref):
+                if not ref:
+                    continue
+                path = REPO_ROOT / ref
+                if path.exists():
+                    path.unlink()
+                    evidence_removed.append(ref)
+
+        self._send_json(200, {"deleted": registry_id, "evidence_removed": evidence_removed})
 
     def _send_json(self, status: int, payload: dict) -> None:
         body = json.dumps(payload).encode("utf-8")
