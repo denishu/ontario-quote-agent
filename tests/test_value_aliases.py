@@ -33,3 +33,14 @@ def test_resolve_display_value_prefers_direct_match_when_present(page):
 def test_resolve_display_value_falls_back_to_original_value_when_nothing_matches(page):
     group = page.locator("#vehicle-use-group")
     assert resolve_display_value(group, "totally-unrelated-value") == "totally-unrelated-value"
+
+
+def test_resolve_display_value_maps_python_bool_strings_to_yes_no(page):
+    # Confirmed on a real site (Aviva): a boolean field's value stringifies
+    # to Python's own "True"/"False", but the real display text is
+    # "Yes"/"No" -- neither is a substring of the other, so this needs an
+    # explicit alias, not just case-insensitive matching.
+    group = page.locator("#yes-no-group")
+    assert group.get_by_text("True", exact=False).count() == 0
+    assert resolve_display_value(group, "True") == "Yes"
+    assert resolve_display_value(group, "False") == "No"

@@ -17,6 +17,14 @@ VALUE_ALIASES: dict[str, list[str]] = {
     "owned": ["own"],
     "leased": ["lease"],
     "financed": ["finance"],
+    # Boolean fields (e.g. winter_tires, anti_theft_device) get stringified
+    # as Python's own str(bool) -- "True"/"False", capitalized exactly like
+    # this -- but real sites display "Yes"/"No" for the same question,
+    # confirmed on a real site (Aviva). Keys must match that exact case;
+    # get_by_text's own matching against the page is case-insensitive, but
+    # this dict lookup is a plain Python dict access, which isn't.
+    "True": ["Yes"],
+    "False": ["No"],
 }
 
 
