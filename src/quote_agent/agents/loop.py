@@ -181,8 +181,14 @@ def fill_visible_fields(
     mis-resolved label pointed a click at text that was never going to
     appear, hanging for a full Playwright timeout and then crashing the
     entire call, taking every other field on the page down with it. Each
-    field's interaction is isolated so one bad field can't do that --
-    the failure is recorded in failed_to_fill and the rest still proceed.
+    field's *entire* per-field body is isolated, not just the final
+    interaction step -- confirmed on the same real site that widget-type
+    detection itself can hit a stale, since-re-rendered element (the page
+    keeps mutating during an LLM fallback call's real network latency),
+    which crashed just as hard from a step earlier than the original fix
+    covered. One bad field can't take the rest of the page down from
+    anywhere in its own processing; the failure is recorded in
+    failed_to_fill and the loop moves on.
     """
     visible_text = page.inner_text("body")
     if detect_captcha(visible_text):
@@ -191,17 +197,17 @@ def fill_visible_fields(
     report = FillReport()
 
     for label_text, control in discover_fields(page):
-        path = resolve_field(label_text, llm_fallback=llm_fallback)
-        if path is None:
-            report.unresolved.append(label_text)
-            continue
-
-        widget_type = detect_widget_type(control)
-        if widget_type is WidgetType.UNKNOWN:
-            report.skipped_unknown_widget.append(label_text)
-            continue
-
         try:
+            path = resolve_field(label_text, llm_fallback=llm_fallback)
+            if path is None:
+                report.unresolved.append(label_text)
+                continue
+
+            widget_type = detect_widget_type(control)
+            if widget_type is WidgetType.UNKNOWN:
+                report.skipped_unknown_widget.append(label_text)
+                continue
+
             value = get_field_value(intake, path, vehicle_index=vehicle_index, household_index=household_index)
             _apply(page, control, widget_type, value)
         except Exception as exc:
