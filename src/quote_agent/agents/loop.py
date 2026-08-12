@@ -66,10 +66,23 @@ def _resolve_labeled_control(label: Locator) -> Locator | None:
             return by_id.first
 
         nearby = label.locator("xpath=..").locator("input:not([type=hidden]), select, textarea")
-        for i in range(nearby.count()):
-            candidate = nearby.nth(i)
-            if candidate.is_visible():
-                return candidate
+        visible_nearby = [nearby.nth(i) for i in range(nearby.count()) if nearby.nth(i).is_visible()]
+        if len(visible_nearby) == 1:
+            return visible_nearby[0]
+        # More than one nearby candidate is the same ambiguity as the
+        # wrapped-control case below, not just permissive -- confirmed on
+        # a real site (Aviva): <label for="dateOfBirth">Date of birth</label>
+        # dangles (no element actually has id="dateOfBirth"), sitting in a
+        # container that also holds all three real day/month/year inputs
+        # as descendants. Blindly taking the first visible one (month, by
+        # DOM order) both mislabeled it "Date of birth" and marked it
+        # discovered, blocking its own correct aria-label from ever
+        # running -- the exact same failure mode as the wrapped case, just
+        # reached through the dangling-for= path instead of the no-for=
+        # path. The single-candidate mislinked-postal-code case this
+        # fallback exists for is unaffected: its only non-hidden sibling
+        # is the one real field, so this still resolves it exactly as
+        # before.
         return None
 
     wrapped = label.locator("input, select, textarea")

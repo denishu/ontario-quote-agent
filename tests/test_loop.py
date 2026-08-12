@@ -151,6 +151,21 @@ def test_discover_fields_does_not_fill_a_honeypot_field(page):
     assert matches == []
 
 
+def test_discover_fields_does_not_guess_among_multiple_dangling_for_candidates(page):
+    # "#dangling-for-multiple-candidates-row"'s <label for="dateOfBirth">
+    # dangles (no element has that id) and sits alongside THREE real
+    # candidates, not one -- confirmed on a real site (Aviva). Unlike the
+    # single-candidate mislinked-postal-code case, guessing the first one
+    # here both mislabels it and blocks its own correct aria-label from
+    # ever being discovered.
+    pairs = dict(discover_fields(page))
+
+    assert "Date of birth" not in pairs
+    assert pairs["Birth month, dangling-for variant"].get_attribute("id") == "real-dob-month"
+    assert pairs["Birth day, dangling-for variant"].get_attribute("id") == "real-dob-day"
+    assert pairs["Birth year, dangling-for variant"].get_attribute("id") == "real-dob-year"
+
+
 def test_discover_fields_does_not_guess_a_control_for_a_decorative_label(page):
     # "Terms of Use and Privacy Policy." has no for= and wraps no control
     # -- unlike the dangling-for= case above, there's no evidence this

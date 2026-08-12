@@ -100,6 +100,23 @@
     <input id="alt-street-address" type="text" placeholder="Please enter and select street address">
   </div>
 
+  <!-- Dangling for= with MULTIPLE real (non-hidden) sibling candidates, not
+       just one -- confirmed on a real site (Aviva): <label
+       for="dateOfBirth">Date of birth</label> dangles (no element actually
+       has id="dateOfBirth"), sitting in a container that also holds all
+       three real day/month/year inputs as descendants. Unlike
+       #mislinked-row above (exactly one real candidate, unambiguous),
+       blindly taking the first one here both mislabels it and blocks its
+       own correct aria-label from ever being discovered. -->
+  <div id="dangling-for-multiple-candidates-row">
+    <label for="dateOfBirth">Date of birth</label>
+    <div>
+      <input id="real-dob-month" type="text" aria-label="Birth month, dangling-for variant">
+      <input id="real-dob-day" type="text" aria-label="Birth day, dangling-for variant">
+      <input id="real-dob-year" type="text" aria-label="Birth year, dangling-for variant">
+    </div>
+  </div>
+
   <!-- Decorative label with no for= and no wrapped control at all (mirrors
        a real site's "Terms of Use and Privacy Policy." text sitting next
        to an unrelated checkbox it doesn't actually label). Must stay
