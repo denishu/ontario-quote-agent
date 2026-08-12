@@ -123,18 +123,14 @@ def _client() -> Anthropic:
     return Anthropic(api_key=api_key)
 
 
-def _call_tool(page_text: str, tool: dict) -> dict:
+def _call_tool(page_text: str, tool: dict, extra_instruction: str = "") -> dict:
+    instruction = f"Extract the quote details from this insurance quote result page.{extra_instruction}"
     message = _client().messages.create(
         model=_MODEL,
         max_tokens=2048,
         tools=[tool],
         tool_choice={"type": "tool", "name": tool["name"]},
-        messages=[
-            {
-                "role": "user",
-                "content": f"Extract the quote details from this insurance quote result page:\n\n{page_text[:_MAX_PAGE_CHARS]}",
-            }
-        ],
+        messages=[{"role": "user", "content": f"{instruction}\n\n{page_text[:_MAX_PAGE_CHARS]}"}],
     )
     for block in message.content:
         if block.type == "tool_use":
@@ -146,8 +142,16 @@ def _real_llm_extract(page_text: str) -> dict:
     return _call_tool(page_text, _EXTRACTION_TOOL)
 
 
+_MULTI_EXTRA_INSTRUCTION = (
+    " If coverage details (liability limit, deductibles, DCPD, etc.) appear once for the "
+    "whole page rather than repeated per quote, they describe one shared coverage "
+    "configuration the comparison was run under -- apply them to every quote listed, not "
+    "just whichever one happens to appear nearest to them in the text."
+)
+
+
 def _real_llm_extract_multi(page_text: str) -> dict:
-    return _call_tool(page_text, _MULTI_EXTRACTION_TOOL)
+    return _call_tool(page_text, _MULTI_EXTRACTION_TOOL, _MULTI_EXTRA_INSTRUCTION)
 
 
 def _build_quote_obtained(page_text: str, data: dict, benchmark: CoverageConfig) -> QuoteObtained:
