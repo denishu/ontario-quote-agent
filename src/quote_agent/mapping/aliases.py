@@ -36,6 +36,10 @@ ALIASES: dict[str, str] = {
     "are you a university or college student currently living away from home": (
         "identity.is_student_living_away_from_home"
     ),
+    # Confirmed live (Aviva, 2026-08-12): two discount-eligibility questions added to
+    # the Driver Details page since this flow was last verified.
+    "are you retired": "identity.is_retired",
+    "are you a telus health customer": "identity.is_telus_health_customer",
     # Contact
     "email": "contact_email",
     "email address": "contact_email",
@@ -88,6 +92,10 @@ ALIASES: dict[str, str] = {
     "times license has been suspended last 6 years": "insurance_history.licence_suspensions_last_6_years",
     # Coverage benchmark
     "when would you like your insurance to start": "coverage_benchmark.effective_date",
+    # Aviva's own confirmed real wording says "coverage", not "insurance" -- kept
+    # as a second alias rather than replacing the first, since other sites use
+    # "insurance" (confirmed live, Aviva, 2026-08-12).
+    "when would you like your coverage to start": "coverage_benchmark.effective_date",
     "start date": "coverage_benchmark.effective_date",
     "third party liability limit": "coverage_benchmark.third_party_liability_limit",
     "collision deductible": "coverage_benchmark.collision_deductible",

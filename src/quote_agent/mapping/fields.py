@@ -59,6 +59,8 @@ FIELDS: tuple[FieldSpec, ...] = (
         "identity.is_student_living_away_from_home",
         "Whether the applicant is a university/college student living away from home (discount eligibility)",
     ),
+    FieldSpec("identity.is_retired", "Whether the applicant is retired (discount eligibility)"),
+    FieldSpec("identity.is_telus_health_customer", "Whether the applicant is a TELUS Health customer (discount eligibility)"),
     # Contact
     FieldSpec("contact_email", "Applicant's email address"),
     FieldSpec("contact_phone", "Applicant's phone number"),

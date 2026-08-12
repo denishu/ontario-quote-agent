@@ -41,6 +41,8 @@ class Identity(StrictModel):
     g2_licence_date: str | None = None
     full_g_licence_date: str | None = None
     is_student_living_away_from_home: bool | None = None  # discount eligibility
+    is_retired: bool | None = None  # discount eligibility -- confirmed live, Aviva's Driver Details page
+    is_telus_health_customer: bool | None = None  # discount eligibility -- confirmed live, Aviva's Driver Details page
 
 
 class Address(StrictModel):
