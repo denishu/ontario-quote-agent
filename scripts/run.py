@@ -19,7 +19,7 @@ data/intake.example.json and fill in your own real information first).
 import sys
 from pathlib import Path
 
-from quote_agent.agents import make_generic_flow, run_web_attempt
+from quote_agent.agents import make_generic_flow, run_web_attempt, summarize_outcome
 from quote_agent.agents.sites.onlia import onlia_personal_info_flow
 from quote_agent.io import DATA_DIR, load_intake, load_registry, save_results
 from quote_agent.models import QuoteStatus
@@ -61,7 +61,7 @@ def main() -> None:
     for entry in plan.to_attempt:
         flow = DEDICATED_FLOWS.get(entry.registry_id) or make_generic_flow(entry)
         print(f"\nAttempting {entry.registry_id} ({'dedicated' if entry.registry_id in DEDICATED_FLOWS else 'generic'} flow)...")
-        results.append(run_web_attempt(entry, intake, flow))
+        results.append(run_web_attempt(entry, intake, flow, summarize=summarize_outcome))
 
     print("\n=== Raw results ===")
     for r in results:

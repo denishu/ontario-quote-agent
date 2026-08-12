@@ -1,10 +1,11 @@
-"""Aviva's vehicle-details step (myaviva.avivainsurance.ca/avivaquoter/
-bol/auto/vehicle) -- the only part of Aviva's flow mapped and validated
-against the real live site so far. Fills postal code, year, make, model,
-purchase month/year, vehicle condition, anti-theft device, and winter
-tires automatically, using the fully generic fill loop (fill_visible_fields
-+ run_flow_steps) plus one Aviva-specific step: dismissing a modal that
-never closes on its own.
+"""Aviva's full intake flow (myaviva.avivainsurance.ca/avivaquoter/bol/
+auto/...) -- Car Details -> Car Use -> Driver Details, all mapped and
+validated against the real live site. Fills every field across all three
+pages automatically (vehicle YMM/purchase date/condition/anti-theft/
+winter tires, annual km, commute days/distance, coverage start date,
+driver name/DOB/sex/marital status, continuous-insurance duration) using
+the fully generic fill loop (fill_visible_fields + run_flow_steps) plus
+one Aviva-specific step: dismissing a modal that never closes on its own.
 
 Unlike Onlia, Aviva's real quoter URL isn't stable/reusable -- it carries
 a sid= session token that's freshly minted each time a real visitor
@@ -27,11 +28,21 @@ model, purchase date, vehicle condition, anti-theft device) then fills
 correctly through the fully generic pipeline with no further Aviva-
 specific handling needed.
 
-This flow was validated through the end of the vehicle-details page (it
-advances to whatever comes next), but that next page is itself unmapped
--- always ends in MANUAL_HANDOFF, not because of a safety boundary the
-way Onlia's consent checkpoint is, but simply because nothing past this
-point has been explored or tested yet.
+Confirmed live (2026-08-12): after Driver Details, the flow reaches its
+actual quote-generation trigger and presents exactly two options --
+"Email me my quote" or "Buy now". There is no on-page premium/coverage
+display, PDF, or other scrapable quote artifact at all. Both remaining
+options are out of scope by design: "Buy now" is a purchase/binding
+action automation must never click, and "Email me my quote" would
+require reading the applicant's real inbox (no email-scraping
+capability, out of scope). Always ends in MANUAL_HANDOFF here -- not a
+safety boundary the way Onlia's consent checkpoint is, but a genuine
+dead end in what this site's own flow can offer to an automated client.
+
+Also confirmed live: Aviva's Driver Details page carries two invisible
+anti-bot honeypot fields (hp-label class, aria-hidden labels pointing at
+tabindex=-1 inputs) -- both correctly detected and left unfilled by
+discover_fields' visible-label check.
 
 Deliberately not covered by the pytest suite: this launches a real
 browser against a real live third-party site every time it runs, which
@@ -98,11 +109,16 @@ def make_aviva_flow(start_url: str, *, headless: bool = True) -> WebFlow:
                     status=QuoteStatus.MANUAL_HANDOFF,
                     raw_evidence_text=page.inner_text("body"),
                     failure_reason=(
-                        "Vehicle-details step (page 1) completed as far as this flow is mapped. "
-                        "Whatever page comes next is unmapped -- this flow was never exercised "
-                        "past this point."
+                        "Full intake flow (Car Details, Car Use, Driver Details) completed and "
+                        "reached the quote-generation trigger, which offers only \"Email me my "
+                        "quote\" or \"Buy now\" -- no on-page premium/coverage display, PDF, or "
+                        "other scrapable quote artifact exists."
                     ),
-                    next_action="Needs manual investigation or further mapping to continue automating subsequent pages",
+                    next_action=(
+                        "Requires a human to either complete the purchase (out of scope -- this "
+                        "tool never binds a policy) or retrieve the emailed quote manually "
+                        "(out of scope -- no email-scraping capability)"
+                    ),
                 )
             finally:
                 browser.close()
