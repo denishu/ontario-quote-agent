@@ -53,10 +53,28 @@ from quote_agent.models import RegistryEntry  # noqa: E402
 
 def _find_registry_entry(underwriter: str, registry: list[RegistryEntry]) -> RegistryEntry | None:
     normalized = underwriter.strip().casefold()
+    if not normalized:
+        # "" is a substring of every string in Python, so without this guard
+        # an empty extraction would silently match registry[0] instead of
+        # correctly falling through to "skipped".
+        return None
+
     for entry in registry:
         known = entry.legal_underwriter.strip().casefold()
         if normalized in known or known in normalized:
             return entry
+
+    # Fall back to brand_or_program: a single-source page (e.g.
+    # belairdirect.com) shows its consumer brand name prominently and often
+    # never states the underwriting legal entity ("Belair Insurance Company
+    # Inc.") at all, so the LLM extraction reasonably returns the brand name
+    # instead -- confirmed live, a belairdirect paste was skipped entirely
+    # because "belairdirect" never matched "Belair Insurance Company Inc.".
+    for entry in registry:
+        brand = (entry.brand_or_program or "").strip().casefold()
+        if brand and (normalized in brand or brand in normalized):
+            return entry
+
     return None
 
 
