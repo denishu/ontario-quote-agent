@@ -73,6 +73,11 @@ def format_fill_report(
         lines.append(f"  {label!r}")
         lines.append(f"      {error}")
 
+    lines.append(f"\nNO DATA ({len(report.no_data)})")
+    for label, path in sorted(report.no_data.items()):
+        lines.append(f"  {label!r}")
+        lines.append(f"      -> {path} (intake has no value for this)")
+
     return "\n".join(lines)
 
 

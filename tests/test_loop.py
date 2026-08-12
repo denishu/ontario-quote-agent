@@ -160,6 +160,26 @@ def test_discover_fields_finds_a_controls_own_aria_label(page):
     assert pairs["Company name"].get_attribute("id") == "company-name"
 
 
+def test_fill_visible_fields_reports_no_data_instead_of_filling_the_literal_string_none(page):
+    # "#company-name" resolves fine and classifies as a normal TEXT widget,
+    # but the field it maps to (commute_one_way_km) has no value in this
+    # intake -- confirmed on a real site (Aviva) that leaving this
+    # unguarded fills the literal string "None" into the page, which a
+    # type="number" input outright rejects and a plain text field would
+    # silently accept as garbage instead.
+    intake = make_intake()
+    assert intake.vehicles[0].commute_one_way_km is None
+
+    def llm_fallback(label: str) -> str | None:
+        return "vehicles[].commute_one_way_km" if label == "Company name" else None
+
+    report = fill_visible_fields(page, intake, llm_fallback=llm_fallback)
+
+    assert report.no_data["Company name"] == "vehicles[].commute_one_way_km"
+    assert "Company name" not in report.filled
+    assert page.locator("#company-name").input_value() == ""
+
+
 def test_discover_fields_groups_fragmented_radiogroups_under_shared_parent(page):
     # "New"/"Used"/"Demo under 5,000 kms" are each their own separate
     # role="radiogroup" (one radio each) instead of one group with three

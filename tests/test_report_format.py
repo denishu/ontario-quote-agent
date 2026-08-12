@@ -91,6 +91,15 @@ def test_format_fill_report_shows_unresolved_skipped_and_failed_sections():
     assert "TimeoutError: something went wrong" in output
 
 
+def test_format_fill_report_shows_no_data_section():
+    report = FillReport(no_data={"Previous policy expiry": "insurance_history.current_policy_expiry"})
+    output = format_fill_report(report, make_intake())
+
+    assert "NO DATA (1)" in output
+    assert "'Previous policy expiry'" in output
+    assert "insurance_history.current_policy_expiry (intake has no value for this)" in output
+
+
 def test_format_flow_result_numbers_and_separates_each_step():
     report1 = FillReport(filled={"Vehicle use": "vehicles[].primary_use"})
     report2 = FillReport(unresolved=["Something on page 2"])

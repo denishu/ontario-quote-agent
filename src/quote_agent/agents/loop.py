@@ -36,6 +36,7 @@ class FillReport:
     unresolved: list[str] = field(default_factory=list)  # labels with no schema match
     skipped_unknown_widget: list[str] = field(default_factory=list)  # labels whose widget type is ambiguous
     failed_to_fill: dict[str, str] = field(default_factory=dict)  # label -> error, resolved+classified but interaction still failed
+    no_data: dict[str, str] = field(default_factory=dict)  # label -> resolved field path, but intake has no value for it
 
 
 def _resolve_labeled_control(label: Locator) -> Locator | None:
@@ -244,6 +245,17 @@ def fill_visible_fields(
                 continue
 
             value = get_field_value(intake, path, vehicle_index=vehicle_index, household_index=household_index)
+            if value is None:
+                # A resolved, classified field with genuinely no data behind
+                # it -- confirmed on a real site (Aviva) that leaving this
+                # unguarded types the literal string "None" into the page.
+                # On a type="number" input that raises outright; on a plain
+                # text field it would silently succeed and corrupt the form
+                # with garbage instead, which is worse. Reported separately
+                # from both "unresolved" (we don't know what this field is)
+                # and "failed" (we tried and the interaction itself broke).
+                report.no_data[label_text] = path
+                continue
             _apply(page, control, widget_type, value)
         except Exception as exc:
             report.failed_to_fill[label_text] = f"{type(exc).__name__}: {exc}"
