@@ -70,6 +70,7 @@ class Vehicle(StrictModel):
     primary_use: Literal["pleasure", "commute", "school", "business", "farm", "commercial"]
     annual_km: int
     commute_one_way_km: float | None = None
+    commute_days_per_week: int | None = None
     winter_tires: bool | None = None
     anti_theft_device: bool | None = None
     parking_type: str | None = None  # e.g. "garage", "driveway", "street" -- not restricted, wording varies by site

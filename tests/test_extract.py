@@ -89,6 +89,12 @@ def test_vehicle_fields_use_index_default_zero():
     assert get_field_value(intake, "vehicles[].annual_km") == 12000
 
 
+def test_commute_days_per_week_is_a_plain_field():
+    intake = make_intake()
+    intake.vehicles[0].commute_days_per_week = 5
+    assert get_field_value(intake, "vehicles[].commute_days_per_week") == 5
+
+
 def test_vehicle_fields_respect_explicit_index():
     intake = make_intake()
     assert get_field_value(intake, "vehicles[].make", vehicle_index=1) == "Honda"

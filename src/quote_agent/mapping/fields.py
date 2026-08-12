@@ -82,6 +82,7 @@ FIELDS: tuple[FieldSpec, ...] = (
     FieldSpec("vehicles[].primary_use", "Pleasure, commute, school, business, farm, or commercial use"),
     FieldSpec("vehicles[].annual_km", "Annual kilometres driven"),
     FieldSpec("vehicles[].commute_one_way_km", "One-way commute distance in km"),
+    FieldSpec("vehicles[].commute_days_per_week", "Number of days a week driven to work or school"),
     FieldSpec("vehicles[].winter_tires", "Whether the vehicle has winter tires"),
     FieldSpec("vehicles[].anti_theft_device", "Whether the vehicle has an anti-theft device"),
     FieldSpec("vehicles[].parking_type", "Where the vehicle is parked overnight, e.g. garage, driveway, street"),

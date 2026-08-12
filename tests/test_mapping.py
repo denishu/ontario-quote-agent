@@ -29,6 +29,8 @@ def test_every_alias_target_is_a_known_field_path():
         ("My last name is", "identity.last_name"),
         ("Full Name", "identity.legal_name"),
         ("Do you have winter tires?", "vehicles[].winter_tires"),
+        ("How many kilometres do you drive per year?", "vehicles[].annual_km"),
+        ("How many days a week do you commute to work or school?", "vehicles[].commute_days_per_week"),
         ("Do you have any tickets or convictions in the past 3 years?", "insurance_history.convictions_last_3_years"),
     ],
 )
