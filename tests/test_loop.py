@@ -138,6 +138,21 @@ def test_discover_fields_does_not_guess_a_control_for_a_label_wrapping_several(p
     assert pairs["Enter the year you were born"].get_attribute("id") == "dob-year"
 
 
+def test_discover_fields_does_not_leak_a_fragment_via_its_own_real_label(page):
+    # "#fragmented-labeled-options" -- each fragment option carries its
+    # own real, valid <label for="..."> wrapping it directly (not
+    # dangling, not wrapping multiple controls) -- confirmed live on a
+    # real site (Aviva). The label pass runs before the
+    # fragmented-radiogroup pass, so this must be caught explicitly:
+    # otherwise it grabs the fragment individually first, ahead of the
+    # correctly-grouped question.
+    pairs = dict(discover_fields(page))
+
+    assert "My partner does" not in pairs
+    assert "No" not in pairs
+    assert pairs["Combined policy discount (real)"].get_attribute("id") == "fragmented-labeled-options"
+
+
 def test_discover_fields_does_not_fill_a_honeypot_field(page):
     # "#honeypot-input" has a real for= association resolving to a control
     # with its own real layout box, so a naive check on the control alone

@@ -143,6 +143,24 @@ def discover_fields(page: Page) -> list[tuple[str, Locator]]:
             control = _resolve_labeled_control(label)
             if control is None:
                 continue
+            if control.get_attribute("role") == "radio":
+                # A label resolving to a single-radio fragment of a larger
+                # multi-option question must not be discovered here --
+                # confirmed live on a real site (Aviva) that every
+                # fragment option carries its own real, valid <label
+                # aria-hidden="true" for="...">My partner does</label>
+                # wrapping it directly. This pass runs before the
+                # fragmented-radiogroup pass below, so without this check
+                # it grabs the fragment individually (marking it
+                # discovered) before that pass ever gets a chance to
+                # group it under the shared parent's real question text
+                # ("auto.driver.combinedPolicyDiscount") -- every earlier
+                # fix aimed at the later passes was chasing symptoms of
+                # this same leak, not the source of it. Left for that
+                # pass to handle instead of guessed at here.
+                fragment_group = control.locator("xpath=ancestor::*[@role='radiogroup'][1]")
+                if fragment_group.count() > 0 and fragment_group.locator('[role="radio"]').count() == 1:
+                    continue
             text = label.inner_text().strip()
             if not text:
                 continue
