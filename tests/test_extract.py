@@ -101,6 +101,34 @@ def test_vehicle_fields_respect_explicit_index():
     assert get_field_value(intake, "vehicles[].annual_km", vehicle_index=1) == 8000
 
 
+def test_years_continuously_insured_bucket():
+    # Confirmed on a real site (Aviva): "How long have you had continuous
+    # car insurance in Canada?" offers only three discrete buckets, not a
+    # raw number entry.
+    intake = make_intake()
+    intake.insurance_history.years_continuously_insured = 0
+    assert get_field_value(intake, "insurance_history.years_continuously_insured_bucket") == (
+        "I don't have insurance"
+    )
+    intake.insurance_history.years_continuously_insured = 2
+    assert get_field_value(intake, "insurance_history.years_continuously_insured_bucket") == (
+        "Less than 3 years"
+    )
+    intake.insurance_history.years_continuously_insured = 3
+    assert get_field_value(intake, "insurance_history.years_continuously_insured_bucket") == (
+        "3 or more years"
+    )
+    intake.insurance_history.years_continuously_insured = 20
+    assert get_field_value(intake, "insurance_history.years_continuously_insured_bucket") == (
+        "3 or more years"
+    )
+
+
+def test_years_continuously_insured_bucket_is_none_when_unset():
+    intake = make_intake()  # years_continuously_insured defaults to None
+    assert get_field_value(intake, "insurance_history.years_continuously_insured_bucket") is None
+
+
 def test_virtual_dob_split():
     # Confirmed on a real site (Aviva) that date of birth is asked as
     # three separate text boxes (day/month/year), not the full ISO date --

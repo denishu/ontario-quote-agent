@@ -69,6 +69,16 @@ def get_field_value(
             return None
         return int(date_str.split("-")[0])
 
+    if path == "insurance_history.years_continuously_insured_bucket":
+        years = intake.insurance_history.years_continuously_insured
+        if years is None:
+            return None
+        if years <= 0:
+            return "I don't have insurance"
+        if years < 3:
+            return "Less than 3 years"
+        return "3 or more years"
+
     if path in _COUNT_FIELDS:
         field_name = path.split(".", 1)[1]
         records = getattr(intake.insurance_history, field_name)

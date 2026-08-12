@@ -35,6 +35,14 @@ def test_every_alias_target_is_a_known_field_path():
             "How many kilometers do you commute to work or school (one-way)?",
             "vehicles[].commute_one_way_km",
         ),
+        ("Sex", "identity.gender"),
+        ("Enter the month you were born", "identity.dob_month"),
+        ("Enter the day you were born", "identity.dob_day"),
+        ("Enter the year you were born", "identity.dob_year"),
+        (
+            "How long have you had continuous car insurance in Canada?",
+            "insurance_history.years_continuously_insured_bucket",
+        ),
         ("Do you have any tickets or convictions in the past 3 years?", "insurance_history.convictions_last_3_years"),
     ],
 )

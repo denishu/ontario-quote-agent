@@ -13,9 +13,13 @@ ALIASES: dict[str, str] = {
     "last name": "identity.last_name",
     "my last name is": "identity.last_name",
     "gender": "identity.gender",
+    "sex": "identity.gender",
     "dob": "identity.date_of_birth",
     "date of birth": "identity.date_of_birth",
     "born": "identity.date_of_birth",
+    "enter the month you were born": "identity.dob_month",
+    "enter the day you were born": "identity.dob_day",
+    "enter the year you were born": "identity.dob_year",
     "single married or common law": "identity.marital_status",
     "marital status": "identity.marital_status",
     "marriage status": "identity.marital_status",
@@ -68,6 +72,9 @@ ALIASES: dict[str, str] = {
     # Insurance / driving history
     "how many years have you had auto insurance": "insurance_history.years_continuously_insured",
     "years insured": "insurance_history.years_continuously_insured",
+    "how long have you had continuous car insurance in canada": (
+        "insurance_history.years_continuously_insured_bucket"
+    ),
     "how many years have you been with your current insurance company": (
         "insurance_history.years_with_current_insurer"
     ),

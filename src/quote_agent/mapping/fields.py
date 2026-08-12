@@ -109,6 +109,14 @@ FIELDS: tuple[FieldSpec, ...] = (
         "Total years continuously insured anywhere (not necessarily with the current insurer)",
     ),
     FieldSpec(
+        "insurance_history.years_continuously_insured_bucket",
+        "Continuous insurance duration bucketed into this form's own three options -- "
+        "virtual field, not separately stored; derived from years_continuously_insured. "
+        "Confirmed on a real site (Aviva): 'How long have you had continuous car insurance "
+        "in Canada?' offers only 'I don't have insurance' / 'Less than 3 years' / "
+        "'3 or more years', not a raw number entry.",
+    ),
+    FieldSpec(
         "insurance_history.years_with_current_insurer",
         "Years insured specifically with the current/most recent insurer",
     ),
