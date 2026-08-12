@@ -99,6 +99,31 @@ def test_licence_number_and_compact_variant_are_redacted():
     assert "[REDACTED:licence_number]" in redact_text(text_compact, intake)
 
 
+def test_isolated_first_name_is_redacted():
+    # Confirmed as a real leak on a real site (MyChoice): its "Driver
+    # Information" section shows only the applicant's first name alone,
+    # which redact_text previously missed entirely -- "Jane" is not a
+    # substring of the stored full "Jane Q. Applicant", so a legal_name-
+    # only check silently lets it straight through into saved evidence.
+    intake = make_intake()
+    text = "Driver Information\nJane\nEdit"
+    redacted = redact_text(text, intake)
+    assert "Jane" not in redacted
+    assert "[REDACTED:first_name]" in redacted
+
+
+def test_isolated_last_name_is_redacted():
+    # legal_name is "Jane Q. Applicant" -- last_name splits on the first
+    # space only (same convention as identity.last_name's virtual-field
+    # derivation elsewhere in this codebase), so it's "Q. Applicant", not
+    # bare "Applicant".
+    intake = make_intake()
+    text = "Secondary contact: Q. Applicant"
+    redacted = redact_text(text, intake)
+    assert "Q. Applicant" not in redacted
+    assert "[REDACTED:last_name]" in redacted
+
+
 def test_unrelated_text_is_left_untouched():
     intake = make_intake()
     text = "Your annual premium is $1,234.56 with a $1,000 collision deductible."
