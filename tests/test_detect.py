@@ -65,6 +65,13 @@ def test_native_date_input_is_treated_as_text(page):
     assert detect_widget_type(page.locator("#coverage-start")) == WidgetType.TEXT
 
 
+def test_native_number_input_is_treated_as_text(page):
+    # Confirmed on a real site (Aviva): "how many kilometres do you drive
+    # per year?" is a plain type="number" input, and Playwright's fill()
+    # accepts a plain numeric string directly.
+    assert detect_widget_type(page.locator("#annual-km")) == WidgetType.TEXT
+
+
 def test_autocomplete_off_field_is_treated_as_text(page):
     # Confirmed against a real saved page (Onlia): autocomplete="off" is
     # not a reliable signal for "this is a custom JS-driven suggestion

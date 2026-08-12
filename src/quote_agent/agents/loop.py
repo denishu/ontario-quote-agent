@@ -109,6 +109,17 @@ def discover_fields(page: Page) -> list[tuple[str, Locator]]:
 
     for label in page.locator("label").all():
         try:
+            if not label.is_visible():
+                # A label a real user can never see is never a legitimate
+                # field to fill, regardless of whether its for= target
+                # happens to resolve to something with its own layout box --
+                # confirmed on a real site (Aviva) as an anti-bot honeypot:
+                # a display:none <label class="hp-label" for="...">Previous
+                # Insurance Start Date</label> pointing at a tabindex="-1"
+                # input that itself passes a naive visibility check. Only a
+                # script that fills whatever it can resolve, without ever
+                # looking at the label itself, would touch this field.
+                continue
             control = _resolve_labeled_control(label)
             if control is None:
                 continue

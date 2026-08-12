@@ -25,13 +25,17 @@ Playwright's fill() works directly against one when given an ISO
 schema is already stored in. Different from the readonly case above:
 that one's ambiguous because typing silently does nothing on a custom JS
 widget; a real type="date" input has no such ambiguity.
+
+A native <input type="number"> is treated the same way -- confirmed on a
+real site (Aviva) for its "how many kilometres do you drive per year?"
+field. Playwright's fill() accepts a plain numeric string directly.
 """
 
 from enum import Enum
 
 from playwright.sync_api import Locator
 
-_TEXT_LIKE_INPUT_TYPES = {None, "text", "email", "tel", "date"}
+_TEXT_LIKE_INPUT_TYPES = {None, "text", "email", "tel", "date", "number"}
 
 
 class WidgetType(str, Enum):

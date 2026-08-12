@@ -23,6 +23,12 @@
   <label for="coverage-start">Coverage start date</label>
   <input id="coverage-start" type="date">
 
+  <!-- Native number input: mirrors a real site's (Aviva) "how many
+       kilometres do you drive per year?" field -- confirmed that Playwright's
+       fill() accepts a plain numeric string directly, same as text. -->
+  <label for="annual-km">Annual kilometres</label>
+  <input id="annual-km" type="number">
+
   <!-- Native select -->
   <label for="province">Province</label>
   <select id="province">
@@ -96,6 +102,17 @@
     <label for="consent-checkbox">I agree to the</label>
     <label>Terms of Use and Privacy Policy.</label>
   </div>
+
+  <!-- Anti-bot honeypot: a real for= association that resolves cleanly to
+       a control with its own layout box (so a naive is_visible() check on
+       the CONTROL alone passes) -- but the <label> itself is display:none,
+       meaning no real user could ever see the field's name. Confirmed on a
+       real site (Aviva): a hidden <label class="hp-label" for="...">Previous
+       Insurance Start Date</label> pointing at a tabindex="-1" input.
+       Must stay undiscoverable; only checking the label's own visibility
+       (not just the control's) catches this. -->
+  <label for="honeypot-input" style="display:none;">Previous Insurance Start Date</label>
+  <input id="honeypot-input" type="text" tabindex="-1" autocomplete="off">
 
   <!-- A control with its own aria-label and no separate <label> element at
        all (mirrors a real site's Year/Make/Model <select> elements, e.g.

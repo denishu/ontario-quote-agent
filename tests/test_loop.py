@@ -125,6 +125,19 @@ def test_discover_fields_falls_back_past_a_dangling_for_reference(page):
     assert control.is_visible()
 
 
+def test_discover_fields_does_not_fill_a_honeypot_field(page):
+    # "#honeypot-input" has a real for= association resolving to a control
+    # with its own real layout box, so a naive check on the control alone
+    # would pass -- but the <label> itself is display:none, meaning no
+    # real user could ever see the field's name. Confirmed on a real site
+    # (Aviva) as an anti-bot honeypot; must stay undiscoverable.
+    pairs = dict(discover_fields(page))
+
+    assert "Previous Insurance Start Date" not in pairs
+    matches = [label for label, control in pairs.items() if control.get_attribute("id") == "honeypot-input"]
+    assert matches == []
+
+
 def test_discover_fields_does_not_guess_a_control_for_a_decorative_label(page):
     # "Terms of Use and Privacy Policy." has no for= and wraps no control
     # -- unlike the dangling-for= case above, there's no evidence this
