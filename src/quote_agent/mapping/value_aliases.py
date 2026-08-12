@@ -25,6 +25,10 @@ VALUE_ALIASES: dict[str, list[str]] = {
     # this dict lookup is a plain Python dict access, which isn't.
     "True": ["Yes"],
     "False": ["No"],
+    # has_bundled_property_policy's stored values, confirmed against a real
+    # site's (Aviva) actual button text.
+    "i_do": ["I do"],
+    "partner_does": ["My partner does"],
 }
 
 

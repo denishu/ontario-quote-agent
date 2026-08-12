@@ -93,4 +93,9 @@ ALIASES: dict[str, str] = {
     "collision deductible": "coverage_benchmark.collision_deductible",
     "comprehensive deductible": "coverage_benchmark.comprehensive_deductible",
     "all perils deductible": "coverage_benchmark.all_perils_deductible",
+    # Aliased on the literal broken i18n key text, not real English -- confirmed on a real site
+    # (Aviva): its "Combined Policy Discount" question's actual discovered label is the raw,
+    # untranslated key "auto.driver.combinedPolicyDiscount" (a bug on Aviva's own end, not
+    # something we can fix), which is exactly what gets discovered at runtime every time.
+    "auto driver combinedpolicydiscount": "has_bundled_property_policy",
 }

@@ -124,3 +124,8 @@ class IntakeProfile(StrictModel):
     vehicles: list[Vehicle]
     insurance_history: InsuranceHistory
     coverage_benchmark: CoverageConfig
+    # Whether the applicant or their spouse/common-law partner already
+    # holds a home/condo/tenant policy with the *same* insurer being
+    # quoted -- a real, recurring bundling-discount question (confirmed
+    # on Aviva), kept generic rather than named after any one insurer.
+    has_bundled_property_policy: Literal["no", "i_do", "partner_does"] | None = None

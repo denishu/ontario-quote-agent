@@ -43,6 +43,7 @@ def test_every_alias_target_is_a_known_field_path():
             "How long have you had continuous car insurance in Canada?",
             "insurance_history.years_continuously_insured_bucket",
         ),
+        ("auto.driver.combinedPolicyDiscount", "has_bundled_property_policy"),
         ("Do you have any tickets or convictions in the past 3 years?", "insurance_history.convictions_last_3_years"),
     ],
 )

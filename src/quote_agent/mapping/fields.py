@@ -145,6 +145,11 @@ FIELDS: tuple[FieldSpec, ...] = (
     FieldSpec("coverage_benchmark.comprehensive_deductible", "Requested comprehensive deductible"),
     FieldSpec("coverage_benchmark.all_perils_deductible", "Requested all-perils deductible"),
     FieldSpec("coverage_benchmark.telematics_opt_in", "Whether the applicant is opting into a telematics program"),
+    FieldSpec(
+        "has_bundled_property_policy",
+        "Whether the applicant or their spouse/common-law partner already holds a home/condo/tenant "
+        "policy with the same insurer, for a bundling discount: 'no', 'i_do', or 'partner_does'",
+    ),
 )
 
 FIELD_PATHS: frozenset[str] = frozenset(f.path for f in FIELDS)

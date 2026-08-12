@@ -148,6 +148,15 @@
     <span role="radio" aria-checked="false" data-value="only-option" class="chip">Only Option</span>
   </div>
 
+  <!-- Combined policy discount radiogroup: mirrors a real site's (Aviva)
+       actual button text for has_bundled_property_policy's stored values
+       ("i_do"/"partner_does"), neither a substring of the other. -->
+  <div role="radiogroup" aria-label="Combined policy discount" id="bundled-policy-group">
+    <span role="radio" aria-checked="false" class="chip">No</span>
+    <span role="radio" aria-checked="false" class="chip">I do</span>
+    <span role="radio" aria-checked="false" class="chip">My partner does</span>
+  </div>
+
   <!-- Yes/No radiogroup: mirrors a real site's boolean-style question --
        real display text is "Yes"/"No", never the Python str(bool) values
        ("True"/"False") a boolean field's value actually stringifies to. -->
