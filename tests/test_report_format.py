@@ -91,6 +91,24 @@ def test_format_fill_report_shows_unresolved_skipped_and_failed_sections():
     assert "TimeoutError: something went wrong" in output
 
 
+def test_format_fill_report_redacts_split_dob_virtual_fields():
+    # identity.dob_day/dob_month/dob_year aren't literally "identity.date_of_birth"
+    # -- confirmed these must still be caught by the sensitive-path check, since
+    # date of birth is a hard, non-negotiable never-log-it field regardless of
+    # which real-site widget shape it came through.
+    report = FillReport(
+        filled={
+            "Day": "identity.dob_day",
+            "Month": "identity.dob_month",
+            "Year": "identity.dob_year",
+        }
+    )
+    output = format_fill_report(report, make_intake())
+
+    assert "1990" not in output
+    assert output.count("[REDACTED]") == 3
+
+
 def test_format_fill_report_shows_no_data_section():
     report = FillReport(no_data={"Previous policy expiry": "insurance_history.current_policy_expiry"})
     output = format_fill_report(report, make_intake())

@@ -4,9 +4,10 @@ pull the actual value out of an IntakeProfile.
 Handles three cases resolve_field() can produce that aren't a plain
 attribute lookup:
   - virtual fields (identity.first_name/last_name -- not separately
-    stored, derived by splitting legal_name; vehicles[].purchase_month/
-    purchase_year -- not separately stored, derived by splitting
-    purchase_or_lease_date)
+    stored, derived by splitting legal_name; identity.dob_day/dob_month/
+    dob_year -- derived by splitting date_of_birth; vehicles[].
+    purchase_month/purchase_year -- not separately stored, derived by
+    splitting purchase_or_lease_date)
   - list-item fields (vehicles[].*, household[].* -- need to know which
     item via vehicle_index/household_index)
   - count fields (insurance_history's record lists -- a form usually asks
@@ -48,6 +49,13 @@ def get_field_value(
     if path == "identity.last_name":
         parts = intake.identity.legal_name.split(" ", 1)
         return parts[1] if len(parts) > 1 else ""
+
+    if path == "identity.dob_year":
+        return intake.identity.date_of_birth.split("-")[0]
+    if path == "identity.dob_month":
+        return intake.identity.date_of_birth.split("-")[1]
+    if path == "identity.dob_day":
+        return intake.identity.date_of_birth.split("-")[2]
 
     if path == "vehicles[].purchase_month":
         date_str = intake.vehicles[vehicle_index].purchase_or_lease_date

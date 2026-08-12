@@ -101,6 +101,18 @@ def test_vehicle_fields_respect_explicit_index():
     assert get_field_value(intake, "vehicles[].annual_km", vehicle_index=1) == 8000
 
 
+def test_virtual_dob_split():
+    # Confirmed on a real site (Aviva) that date of birth is asked as
+    # three separate text boxes (day/month/year), not the full ISO date --
+    # filling the raw ISO string into each got truncated by each box's own
+    # maxlength into garbage ("19"/"19"/"1990" from "1990-01-19").
+    intake = make_intake()
+    intake.identity.date_of_birth = "1990-01-19"
+    assert get_field_value(intake, "identity.dob_year") == "1990"
+    assert get_field_value(intake, "identity.dob_month") == "01"
+    assert get_field_value(intake, "identity.dob_day") == "19"
+
+
 def test_virtual_purchase_month_and_year_split():
     # Confirmed on a real site (Aviva) that "purchase date" is asked as two
     # separate dropdowns (month name, bare year), not the full ISO date --

@@ -30,6 +30,21 @@ FIELDS: tuple[FieldSpec, ...] = (
         "derived from the remainder of legal_name after the first name when a form asks for it alone",
     ),
     FieldSpec("identity.date_of_birth", "Applicant's date of birth"),
+    FieldSpec(
+        "identity.dob_day",
+        "Applicant's birth day -- virtual field, not separately stored; "
+        "derived from date_of_birth when a form splits it into separate day/month/year inputs",
+    ),
+    FieldSpec(
+        "identity.dob_month",
+        "Applicant's birth month as a two-digit number (MM) -- virtual field, not separately stored; "
+        "derived from date_of_birth when a form splits it into separate day/month/year inputs",
+    ),
+    FieldSpec(
+        "identity.dob_year",
+        "Applicant's birth year -- virtual field, not separately stored; "
+        "derived from date_of_birth when a form splits it into separate day/month/year inputs",
+    ),
     FieldSpec("identity.gender", "Applicant's gender, as offered by the form's own options"),
     FieldSpec("identity.marital_status", "Single, married, common law, etc."),
     FieldSpec("identity.licence_number", "Applicant's driver's licence number"),

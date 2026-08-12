@@ -24,6 +24,7 @@ _SENSITIVE_PATH_PREFIXES = (
     "identity.first_name",
     "identity.last_name",
     "identity.date_of_birth",
+    "identity.dob_",  # dob_day/dob_month/dob_year -- split date-of-birth virtual fields
     "identity.licence_number",
     "address.",  # street/unit/postal_code/city -- redact the whole block, not just some of it
     "contact_email",
