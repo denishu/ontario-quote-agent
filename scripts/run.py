@@ -20,6 +20,7 @@ import sys
 from pathlib import Path
 
 from quote_agent.agents import make_generic_flow, run_web_attempt, summarize_outcome
+from quote_agent.agents.sites.aviva import make_aviva_flow
 from quote_agent.agents.sites.onlia import onlia_personal_info_flow
 from quote_agent.io import DATA_DIR, load_intake, load_registry, save_results
 from quote_agent.models import QuoteStatus
@@ -35,7 +36,12 @@ from quote_agent.planner import plan_routes
 # its real site -- grows over time as more sites get built out like
 # onlia.py did. Anything not listed here falls back to a generic
 # best-effort attempt (make_generic_flow) rather than being skipped.
+# make_aviva_flow() is called here (not passed bare) since it's a
+# factory, not a WebFlow itself -- it now obtains its own fresh starting
+# URL internally (see aviva.py's _get_fresh_quoter_url), so no argument
+# is needed at call time any more than onlia_personal_info_flow needs one.
 DEDICATED_FLOWS = {
+    "aviva-direct": make_aviva_flow(),
     "onlia-broker": onlia_personal_info_flow,
 }
 

@@ -9,13 +9,16 @@ one Aviva-specific step: dismissing a modal that never closes on its own.
 
 Unlike Onlia, Aviva's real quoter URL isn't stable/reusable -- it carries
 a sid= session token that's freshly minted each time a real visitor
-clicks "Get a Quote" on Aviva's marketing site (aviva.ca), and confirmed
-to stop working once stale (a fresh request to an old one returns
-Akamai's "Access Denied" edge block, not the form). This flow doesn't yet
-automate obtaining that fresh URL itself -- the caller supplies a current
-one. A factory (make_aviva_flow) rather than a fixed FORM_URL constant,
-for exactly this reason -- see agents.generic_flow for the same pattern
-applied to any registry entry.
+clicks "Get a car insurance quote" on Aviva's marketing site (aviva.ca),
+and confirmed to stop working once stale (a fresh request to an old one
+returns Akamai's "Access Denied" edge block, not the form). Confirmed
+live (2026-08-12): that hero link's href already carries a fresh sid=
+param embedded server-side in the marketing page's own HTML -- no click
+sequence or interaction is needed to obtain one, only a fresh page load
+and reading the link's own href attribute. make_aviva_flow does this
+itself now (_get_fresh_quoter_url), so it's a plain zero-argument
+WebFlow like every other site's flow, not a factory needing an
+externally-supplied URL.
 
 Confirmed live: the postal code modal that gates the page never actually
 dismisses itself -- it stays open (style="display: block") even once
@@ -58,7 +61,7 @@ from datetime import datetime, timezone
 from playwright.sync_api import Page, sync_playwright
 
 from quote_agent.agents.flow import run_flow_steps
-from quote_agent.agents.policy import CaptchaDetected, StopBeforeSensitiveAction
+from quote_agent.agents.policy import CaptchaDetected, StopBeforeSensitiveAction, detect_captcha
 from quote_agent.agents.screenshot import capture_redacted_screenshot
 from quote_agent.agents.web import NonQuoteOutcome, QuoteObtained, WebFlow
 from quote_agent.evidence.store import EVIDENCE_DIR
@@ -67,6 +70,8 @@ from quote_agent.models import IntakeProfile
 from quote_agent.models.status import QuoteStatus
 
 _MAX_STEPS = 30
+_MARKETING_URL = "https://www.aviva.ca/en/find-insurance/vehicle/ontario-personal-auto-insurance/"
+_QUOTE_LINK_TEXT = "Get a car insurance quote"
 
 
 def _capture_screenshot(page: Page) -> str:
@@ -80,11 +85,38 @@ def _capture_screenshot(page: Page) -> str:
     return f"evidence/{filename}"
 
 
-def make_aviva_flow(start_url: str, *, headless: bool = True) -> WebFlow:
-    """Build a WebFlow for Aviva's vehicle-details step, closed over a
-    specific starting URL. start_url must be a fresh myaviva.avivainsurance.ca
-    link (obtained by clicking "Get a Quote" on aviva.ca) -- see module
-    docstring for why this can't be a fixed constant the way Onlia's is.
+def _get_fresh_quoter_url(page: Page) -> str:
+    """Navigate Aviva's Ontario marketing landing page and read a fresh
+    myaviva.avivainsurance.ca URL straight off its "Get a car insurance
+    quote" hero link. Confirmed live (2026-08-12): that href already
+    carries a freshly-minted sid= token server-rendered into the page's
+    own HTML -- no click sequence or JS interaction needed, just a fresh
+    page load and reading the attribute. Raises CaptchaDetected if the
+    marketing page itself shows an anti-automation barrier -- the same
+    "stop and report honestly, never evade" rule applies here too, not
+    just on the quoter page itself.
+    """
+    page.goto(_MARKETING_URL, timeout=60000)
+    page_text = page.inner_text("body")
+    if detect_captcha(page_text):
+        raise CaptchaDetected(raw_evidence_text=page_text)
+
+    link = page.get_by_role("link", name=_QUOTE_LINK_TEXT, exact=True)
+    link.wait_for(state="visible", timeout=30000)
+    href = link.get_attribute("href")
+    if not href:
+        raise RuntimeError(
+            f"Found the {_QUOTE_LINK_TEXT!r} link on Aviva's marketing page but it has no href"
+        )
+    return href
+
+
+def make_aviva_flow(*, headless: bool = True) -> WebFlow:
+    """Build a WebFlow for Aviva's full intake flow. Matches the WebFlow
+    signature (Callable[[IntakeProfile], QuoteObtained | NonQuoteOutcome])
+    like every other site's flow -- see _get_fresh_quoter_url's docstring
+    for how this now obtains its own fresh starting URL instead of
+    needing one supplied externally.
 
     headless defaults to True; confirmed live that Aviva's own edge/WAF
     layer (Akamai) can genuinely block a fresh headless request the same
@@ -92,11 +124,11 @@ def make_aviva_flow(start_url: str, *, headless: bool = True) -> WebFlow:
     makes on their own real desktop session, not a silent default chosen
     because it happens to dodge the block.
 
-    CaptchaDetected (from fill_visible_fields, now also covering generic
-    edge/WAF access-denied pages) and StopBeforeSensitiveAction (from
-    run_flow_steps, when not headless) both propagate to the caller
-    rather than being caught here -- run_web_attempt is what turns those
-    into the right terminal status.
+    CaptchaDetected (from _get_fresh_quoter_url or fill_visible_fields,
+    the latter also covering generic edge/WAF access-denied pages) and
+    StopBeforeSensitiveAction (from run_flow_steps, when not headless)
+    both propagate to the caller rather than being caught here --
+    run_web_attempt is what turns those into the right terminal status.
     """
 
     def flow(intake: IntakeProfile) -> QuoteObtained | NonQuoteOutcome:
@@ -104,6 +136,7 @@ def make_aviva_flow(start_url: str, *, headless: bool = True) -> WebFlow:
             browser = pw.chromium.launch(headless=headless)
             page = browser.new_page()
             try:
+                start_url = _get_fresh_quoter_url(page)
                 page.goto(start_url, timeout=60000)
                 page.wait_for_selector("#postalCode", timeout=30000)
 
