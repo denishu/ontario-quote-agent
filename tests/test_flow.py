@@ -16,6 +16,7 @@ from quote_agent.models import (
 )
 
 MULTISTEP_URL = (Path(__file__).parent / "fixtures" / "multistep.html").resolve().as_uri()
+REVEAL_ON_FILL_URL = (Path(__file__).parent / "fixtures" / "reveal_on_fill.html").resolve().as_uri()
 
 
 def make_intake() -> IntakeProfile:
@@ -75,6 +76,31 @@ def test_run_flow_steps_completes_a_multi_step_flow(page):
     assert result.steps[0].advanced and result.steps[0].changed
     assert result.steps[1].advanced and result.steps[1].changed
     assert not result.steps[2].advanced
+
+
+def test_run_flow_steps_fills_a_field_revealed_by_an_earlier_fill_within_the_same_step(page):
+    # "One-way commute km" doesn't exist meaningfully in the DOM until
+    # "Commute days" is answered -- confirmed on a real site (Aviva).
+    # Without re-observing the page mid-step, this field is never
+    # discovered, the site's own Continue button then refuses to
+    # navigate while it's still empty, and the loop stops for good
+    # believing nothing more can be done.
+    page.goto(REVEAL_ON_FILL_URL)
+    intake = make_intake()
+    intake.vehicles[0].commute_days_per_week = 5
+    intake.vehicles[0].commute_one_way_km = 8.5
+
+    def llm_fallback(label: str) -> str | None:
+        if "commute days" in label.lower():
+            return "vehicles[].commute_days_per_week"
+        if "one-way commute km" in label.lower():
+            return "vehicles[].commute_one_way_km"
+        return None
+
+    run_flow_steps(page, intake, llm_fallback=llm_fallback)
+
+    assert page.locator("#one-way-km").input_value() == "8.5"
+    assert page.locator("#step-2").is_visible()
 
 
 def test_run_flow_steps_stops_before_a_sensitive_action(page):

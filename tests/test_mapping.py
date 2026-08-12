@@ -31,6 +31,10 @@ def test_every_alias_target_is_a_known_field_path():
         ("Do you have winter tires?", "vehicles[].winter_tires"),
         ("How many kilometres do you drive per year?", "vehicles[].annual_km"),
         ("How many days a week do you commute to work or school?", "vehicles[].commute_days_per_week"),
+        (
+            "How many kilometers do you commute to work or school (one-way)?",
+            "vehicles[].commute_one_way_km",
+        ),
         ("Do you have any tickets or convictions in the past 3 years?", "insurance_history.convictions_last_3_years"),
     ],
 )

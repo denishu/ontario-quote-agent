@@ -100,6 +100,49 @@ def pause_for_human(page: Page, instructions: str, timeout_s: float = 1800.0) ->
     return _wait_for_page_change(page, before, timeout_s=timeout_s)
 
 
+def _fill_until_stable(
+    page: Page,
+    intake: IntakeProfile,
+    *,
+    vehicle_index: int,
+    household_index: int,
+    llm_fallback: Callable[[str], str | None] | None,
+    max_passes: int = 5,
+) -> FillReport:
+    """Repeatedly re-observes and fills the *current* page (no clicking)
+    until a pass fills nothing new, merging each pass's report into one.
+
+    discover_fields takes a single snapshot of the page each time it's
+    called -- confirmed on a real site (Aviva) that filling one field can
+    reveal a brand-new field with no navigation at all (choosing a
+    non-zero "how many days a week do you commute" answer reveals a
+    previously-absent "one-way commute distance" field on the same
+    page). A single fill_visible_fields call per step, taken before that
+    field existed, can never see it. Worse, if the site's own Continue
+    button refuses to navigate while a newly-revealed required field is
+    still empty, the step's click produces no observable page change and
+    the whole loop stops -- exactly the point real runs were getting
+    stuck at. Bounded by max_passes against a pathological page that
+    keeps revealing something new forever.
+    """
+    combined = FillReport()
+    for _ in range(max_passes):
+        pass_report = fill_visible_fields(
+            page,
+            intake,
+            vehicle_index=vehicle_index,
+            household_index=household_index,
+            llm_fallback=llm_fallback,
+        )
+        combined.filled.update(pass_report.filled)
+        combined.failed_to_fill.update(pass_report.failed_to_fill)
+        combined.unresolved = pass_report.unresolved
+        combined.skipped_unknown_widget = pass_report.skipped_unknown_widget
+        if not pass_report.filled:
+            break
+    return combined
+
+
 @dataclass
 class StepResult:
     fill_report: FillReport
@@ -146,7 +189,7 @@ def run_flow_steps(
     result = FlowResult()
 
     for _ in range(max_steps):
-        fill_report = fill_visible_fields(
+        fill_report = _fill_until_stable(
             page,
             intake,
             vehicle_index=vehicle_index,

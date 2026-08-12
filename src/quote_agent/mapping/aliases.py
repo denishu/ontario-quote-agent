@@ -57,6 +57,7 @@ ALIASES: dict[str, str] = {
     "vehicle use": "vehicles[].primary_use",
     "what is your daily commute one way in km": "vehicles[].commute_one_way_km",
     "distance to work school or transit one way": "vehicles[].commute_one_way_km",
+    "how many kilometers do you commute to work or school one-way": "vehicles[].commute_one_way_km",
     "how many km driven per year": "vehicles[].annual_km",
     "annual km": "vehicles[].annual_km",
     "how many kilometres do you drive per year": "vehicles[].annual_km",

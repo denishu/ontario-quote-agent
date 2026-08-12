@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Reveal-on-fill fixture</title></head>
+<body>
+
+  <div id="step-1">
+    <label for="q1">First Name</label>
+    <input id="q1" type="text">
+
+    <label for="commute-days">Commute days</label>
+    <select id="commute-days">
+      <option value="">Select</option>
+      <option value="0">0</option>
+      <option value="5">5</option>
+    </select>
+
+    <!-- Does not exist meaningfully until "Commute days" is answered --
+         mirrors a real site (Aviva) where choosing a non-zero commute-days
+         answer reveals a previously-absent one-way-distance field with no
+         navigation at all. -->
+    <div id="one-way-row" style="display:none;">
+      <label for="one-way-km">One-way commute km</label>
+      <input id="one-way-km" type="text">
+    </div>
+
+    <button type="submit" id="next-1">Continue</button>
+  </div>
+
+  <div id="step-2" style="display:none;">
+    <p>Done.</p>
+  </div>
+
+<script>
+  document.getElementById('commute-days').addEventListener('change', (e) => {
+    if (e.target.value === '5') {
+      document.getElementById('one-way-row').style.display = 'block';
+    }
+  });
+
+  document.getElementById('next-1').addEventListener('click', () => {
+    // Mirrors real client-side validation: refuses to navigate while a
+    // currently-revealed required field is still empty.
+    const row = document.getElementById('one-way-row');
+    const revealed = row.style.display !== 'none';
+    const filled = document.getElementById('one-way-km').value.trim() !== '';
+    if (revealed && !filled) {
+      return;
+    }
+    document.getElementById('step-1').style.display = 'none';
+    document.getElementById('step-2').style.display = 'block';
+    history.pushState({}, '', '#step-2');
+  });
+</script>
+</body>
+</html>
