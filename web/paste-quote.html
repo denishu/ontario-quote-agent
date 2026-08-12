@@ -113,6 +113,26 @@
   .card h1 { font-size: 22px; margin: 0 0 4px; }
   .card .subtitle { margin: 0 0 20px; color: var(--text-muted); font-size: 14px; }
 
+  .field-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--field-bg);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13.5px;
+  }
+
+  select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
   textarea {
     width: 100%;
     min-height: 220px;
@@ -240,6 +260,16 @@
         Works for a single quote or a comparison page with several insurers at once.
       </p>
 
+      <label class="field-label" for="source-select">Which source is this from?</label>
+      <select id="source-select">
+        <option value="">Auto-detect (comparison page listing several insurers)</option>
+      </select>
+      <p class="hint">
+        Pick the source when pasting a single-insurer page (e.g. belairdirect) — its result text
+        often never states the underwriter's name, so auto-detect has nothing to match against.
+        Leave on auto-detect for an aggregator page like MyChoice that lists several at once.
+      </p>
+
       <textarea id="quote-text" placeholder="Paste the copied page text here..."></textarea>
       <p class="hint">
         Sent to Claude to extract structured details, then compared against your coverage benchmark
@@ -256,11 +286,28 @@
   const btn = document.getElementById("parse-btn");
   const textarea = document.getElementById("quote-text");
   const statusEl = document.getElementById("status");
+  const sourceSelect = document.getElementById("source-select");
 
   const STATUS_LABELS = {
     quoted_comparable: "Comparable",
     quoted_non_comparable: "Non-comparable",
   };
+
+  (async () => {
+    try {
+      const res = await fetch("/data/registry.json");
+      const registry = await res.json();
+      for (const entry of registry) {
+        const opt = document.createElement("option");
+        opt.value = entry.registry_id;
+        opt.textContent = `${entry.brand_or_program} — ${entry.legal_underwriter}`;
+        sourceSelect.appendChild(opt);
+      }
+    } catch (err) {
+      // Auto-detect still works without the picker populated -- this
+      // only degrades the single-source-page case, not the whole page.
+    }
+  })();
 
   function money(n) {
     if (n == null) return "—";
@@ -305,7 +352,7 @@
       const res = await fetch("/api/parse-quote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, registry_id: sourceSelect.value || null }),
       });
       const data = await res.json();
       if (!res.ok) {

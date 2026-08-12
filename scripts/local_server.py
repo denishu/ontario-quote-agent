@@ -46,7 +46,7 @@ from urllib.parse import unquote
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from quote_agent.agents import build_result, extract_quotes_from_text  # noqa: E402
+from quote_agent.agents import build_result, extract_quote_from_text, extract_quotes_from_text  # noqa: E402
 from quote_agent.io import DATA_DIR, load_intake, load_registry, load_results, save_results  # noqa: E402
 from quote_agent.models import RegistryEntry  # noqa: E402
 
@@ -99,6 +99,12 @@ class Handler(SimpleHTTPRequestHandler):
             self._send_json(400, {"error": "No text provided"})
             return
 
+        # Explicit source picked in the UI, for a single-insurer page (e.g.
+        # belairdirect) whose result text may never state the underwriter's
+        # name at all -- there's nothing for auto-detect to match against,
+        # so the human just says which registry entry this is.
+        registry_id = (body.get("registry_id") or "").strip() or None
+
         intake_path = DATA_DIR / "intake.json"
         if not intake_path.exists():
             self._send_json(
@@ -115,19 +121,28 @@ class Handler(SimpleHTTPRequestHandler):
         try:
             intake = load_intake(intake_path)
             registry = load_registry()
-            outcomes = extract_quotes_from_text(page_text, intake.coverage_benchmark)
+
+            if registry_id is not None:
+                entry = next((e for e in registry if e.registry_id == registry_id), None)
+                if entry is None:
+                    self._send_json(400, {"error": f"Unknown registry_id={registry_id!r}"})
+                    return
+                outcome = extract_quote_from_text(page_text, intake.coverage_benchmark)
+                saved = [build_result(entry, intake, outcome)]
+                skipped = []
+            else:
+                outcomes = extract_quotes_from_text(page_text, intake.coverage_benchmark)
+                saved = []
+                skipped = []
+                for outcome in outcomes:
+                    entry = _find_registry_entry(outcome.returned_legal_underwriter, registry)
+                    if entry is None:
+                        skipped.append(outcome.returned_legal_underwriter)
+                        continue
+                    saved.append(build_result(entry, intake, outcome))
         except Exception as exc:  # deliberate catch-all: a bad paste or API hiccup must not crash the server
             self._send_json(500, {"error": f"{type(exc).__name__}: {exc}"})
             return
-
-        saved = []
-        skipped = []
-        for outcome in outcomes:
-            entry = _find_registry_entry(outcome.returned_legal_underwriter, registry)
-            if entry is None:
-                skipped.append(outcome.returned_legal_underwriter)
-                continue
-            saved.append(build_result(entry, intake, outcome))
 
         if saved:
             updated_ids = {r.registry_id for r in saved}
