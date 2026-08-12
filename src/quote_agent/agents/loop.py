@@ -153,6 +153,8 @@ def discover_fields(page: Page) -> list[tuple[str, Locator]]:
             continue
         pairs.append((text, control))
 
+    fragmented_group_parents: list[Locator] = []
+
     for group in page.locator('[role="radiogroup"]').all():
         try:
             if not group.is_visible():
@@ -193,6 +195,7 @@ def discover_fields(page: Page) -> list[tuple[str, Locator]]:
                     if parent.get_attribute(_DISCOVERED_MARKER) is None:
                         parent.evaluate(f"el => el.setAttribute('{_DISCOVERED_MARKER}', '1')")
                         pairs.append((parent_label, parent))
+                    fragmented_group_parents.append(parent)
                     continue
 
             text = (group.get_attribute("aria-label") or "").strip()
@@ -216,6 +219,27 @@ def discover_fields(page: Page) -> list[tuple[str, Locator]]:
             if not control.is_visible():
                 continue
             text = (control.get_attribute("aria-label") or "").strip()
+            if text and fragmented_group_parents:
+                # Belt-and-suspenders beyond the marker set above: confirmed
+                # on a real site (Aviva) that clicking one fragment's radio
+                # (e.g. selecting "Used", or "My partner does") can trigger
+                # Angular to swap that one element for a fresh instance
+                # between separate Playwright round-trips within this same
+                # call -- silently losing the marker set on the old one.
+                # Checking live DOM containment against every already-
+                # grouped parent, evaluated fresh right now rather than
+                # trusting an attribute that may already be stale, catches
+                # it regardless of exactly when the swap happened. A
+                # rediscovered fragment isn't just redundant here -- it
+                # gets a nonsensical value crammed into its own narrow
+                # scope and hangs for a full click timeout, since a bare
+                # radio input has no text content of its own to match.
+                control_handle = control.element_handle()
+                if control_handle is not None and any(
+                    parent.evaluate("(p, c) => p.contains(c)", control_handle)
+                    for parent in fragmented_group_parents
+                ):
+                    continue
         except Exception:
             continue
         if text:

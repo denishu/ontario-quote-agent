@@ -242,6 +242,34 @@ def test_discover_fields_does_not_rediscover_a_grouped_radio_input_by_its_own_ar
     assert "Used" not in labels
 
 
+def test_discover_fields_excludes_a_grouped_radio_even_if_its_marker_is_lost(page):
+    # Confirmed on a real site (Aviva) that clicking one fragment's radio
+    # can trigger the underlying framework (Angular) to swap that one
+    # element for a fresh instance between separate Playwright round-
+    # trips within a single discover_fields() call -- silently losing the
+    # discovered-marker attribute set on the old element. Simulates that
+    # exact loss directly (strip the marker right after it's set) to
+    # verify the live DOM-containment check still excludes it, since it
+    # doesn't depend on the marker surviving at all.
+    discover_fields(page)  # first pass: groups and marks normally
+    page.evaluate(
+        """() => {
+            document.querySelectorAll('#fragmented-condition-inputs [role="radio"]')
+                .forEach((el) => el.removeAttribute('data-qa-agent-discovered'));
+        }"""
+    )
+
+    pairs = discover_fields(page)
+    labels = [label for label, _ in pairs]
+
+    # The parent's own marker is untouched, so it correctly doesn't
+    # re-add "Real condition question" a second time -- the point of this
+    # test is that stripping the *radio's* marker alone still isn't
+    # enough to leak it back in as its own spurious field.
+    assert "New" not in labels
+    assert "Used" not in labels
+
+
 def test_fill_visible_fields_fills_a_fragmented_radiogroup(page):
     intake = make_intake()
 
