@@ -78,6 +78,23 @@ def test_run_flow_steps_completes_a_multi_step_flow(page):
     assert not result.steps[2].advanced
 
 
+def test_run_flow_steps_reports_no_data_through_the_full_flow(page):
+    # "Gender" resolves fine (the "gender" alias) and classifies as a
+    # normal TEXT widget, but intake.identity.gender has no value --
+    # confirmed as a real, live integration gap: _fill_until_stable was
+    # written before FillReport.no_data existed and never copied it from
+    # each pass into the combined report, so this silently vanished from
+    # every real run's output regardless of what should have been there,
+    # even though the underlying no_data logic itself was correct.
+    page.goto(MULTISTEP_URL)
+    intake = make_intake()
+    assert intake.identity.gender is None
+
+    result = run_flow_steps(page, intake, llm_fallback=None)
+
+    assert result.steps[0].fill_report.no_data["Gender"] == "identity.gender"
+
+
 def test_run_flow_steps_fills_a_field_revealed_by_an_earlier_fill_within_the_same_step(page):
     # "One-way commute km" doesn't exist meaningfully in the DOM until
     # "Commute days" is answered -- confirmed on a real site (Aviva).

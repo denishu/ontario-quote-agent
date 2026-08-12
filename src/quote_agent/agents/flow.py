@@ -136,6 +136,7 @@ def _fill_until_stable(
         )
         combined.filled.update(pass_report.filled)
         combined.failed_to_fill.update(pass_report.failed_to_fill)
+        combined.no_data.update(pass_report.no_data)
         combined.unresolved = pass_report.unresolved
         combined.skipped_unknown_widget = pass_report.skipped_unknown_widget
         if not pass_report.filled:
