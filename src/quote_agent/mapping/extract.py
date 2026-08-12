@@ -4,16 +4,21 @@ pull the actual value out of an IntakeProfile.
 Handles three cases resolve_field() can produce that aren't a plain
 attribute lookup:
   - virtual fields (identity.first_name/last_name -- not separately
-    stored, derived by splitting legal_name)
+    stored, derived by splitting legal_name; vehicles[].purchase_month/
+    purchase_year -- not separately stored, derived by splitting
+    purchase_or_lease_date)
   - list-item fields (vehicles[].*, household[].* -- need to know which
     item via vehicle_index/household_index)
   - count fields (insurance_history's record lists -- a form usually asks
     "how many," not for the itemized list)
 """
 
+import calendar
 from typing import Any
 
 from quote_agent.models import IntakeProfile
+
+_MONTH_NAMES = [calendar.month_name[i] for i in range(1, 13)]
 
 _COUNT_FIELDS = frozenset(
     {
@@ -43,6 +48,18 @@ def get_field_value(
     if path == "identity.last_name":
         parts = intake.identity.legal_name.split(" ", 1)
         return parts[1] if len(parts) > 1 else ""
+
+    if path == "vehicles[].purchase_month":
+        date_str = intake.vehicles[vehicle_index].purchase_or_lease_date
+        if date_str is None:
+            return None
+        month = int(date_str.split("-")[1])
+        return _MONTH_NAMES[month - 1]
+    if path == "vehicles[].purchase_year":
+        date_str = intake.vehicles[vehicle_index].purchase_or_lease_date
+        if date_str is None:
+            return None
+        return int(date_str.split("-")[0])
 
     if path in _COUNT_FIELDS:
         field_name = path.split(".", 1)[1]

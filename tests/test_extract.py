@@ -95,6 +95,22 @@ def test_vehicle_fields_respect_explicit_index():
     assert get_field_value(intake, "vehicles[].annual_km", vehicle_index=1) == 8000
 
 
+def test_virtual_purchase_month_and_year_split():
+    # Confirmed on a real site (Aviva) that "purchase date" is asked as two
+    # separate dropdowns (month name, bare year), not the full ISO date --
+    # matches identity.first_name/last_name's virtual-field pattern.
+    intake = make_intake()
+    intake.vehicles[0].purchase_or_lease_date = "2020-06-15"
+    assert get_field_value(intake, "vehicles[].purchase_month") == "June"
+    assert get_field_value(intake, "vehicles[].purchase_year") == 2020
+
+
+def test_virtual_purchase_month_and_year_are_none_when_unset():
+    intake = make_intake()  # purchase_or_lease_date defaults to None
+    assert get_field_value(intake, "vehicles[].purchase_month") is None
+    assert get_field_value(intake, "vehicles[].purchase_year") is None
+
+
 def test_household_fields_respect_explicit_index():
     intake = make_intake()
     assert get_field_value(intake, "household[].name", household_index=0) == "Household One"

@@ -67,6 +67,18 @@ FIELDS: tuple[FieldSpec, ...] = (
     FieldSpec("vehicles[].ownership", "Owned, leased, or financed"),
     FieldSpec("vehicles[].new_or_used_at_purchase", "Whether the vehicle was new or used at purchase"),
     FieldSpec("vehicles[].purchase_or_lease_date", "Date the vehicle was purchased or leased"),
+    FieldSpec(
+        "vehicles[].purchase_month",
+        "Month the vehicle was purchased or leased, as a month name (e.g. 'June') -- virtual field, not "
+        "separately stored, derived from purchase_or_lease_date when a form asks for the month alone "
+        "(a separate dropdown from the year, not the full date)",
+    ),
+    FieldSpec(
+        "vehicles[].purchase_year",
+        "Year the vehicle was purchased or leased, as a bare year (e.g. 2020) -- virtual field, not "
+        "separately stored, derived from purchase_or_lease_date when a form asks for the year alone "
+        "(a separate dropdown from the month, not the full date)",
+    ),
     FieldSpec("vehicles[].primary_use", "Pleasure, commute, school, business, farm, or commercial use"),
     FieldSpec("vehicles[].annual_km", "Annual kilometres driven"),
     FieldSpec("vehicles[].commute_one_way_km", "One-way commute distance in km"),
