@@ -126,6 +126,30 @@ def discover_fields(page: Page) -> list[tuple[str, Locator]]:
         try:
             if not group.is_visible():
                 continue
+
+            if group.locator('[role="radio"]').count() == 1:
+                # A radiogroup wrapping exactly one radio option is often a
+                # fragment of a larger multi-option question split across
+                # several sibling radiogroups -- confirmed on a real site
+                # (Aviva), where each option ("New", "Used", "Demo under
+                # 5,000 kms") gets its own radiogroup, but their shared
+                # parent container carries the real question as its own
+                # aria-label ("Select the condition your car was in when
+                # you got it"). That parent contains every fragment as a
+                # descendant, so it works directly as the field's control
+                # -- a single click search across it naturally finds
+                # whichever option's text matches. Marked once processed
+                # so the next sibling fragment doesn't re-add the same
+                # question a second (or third) time.
+                parent = group.locator("xpath=..")
+                if parent.get_attribute(_DISCOVERED_MARKER) is not None:
+                    continue
+                parent_label = (parent.get_attribute("aria-label") or "").strip()
+                if parent_label:
+                    parent.evaluate(f"el => el.setAttribute('{_DISCOVERED_MARKER}', '1')")
+                    pairs.append((parent_label, parent))
+                    continue
+
             text = (group.get_attribute("aria-label") or "").strip()
         except Exception:
             continue

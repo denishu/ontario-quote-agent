@@ -51,6 +51,13 @@ def detect_widget_type(locator: Locator) -> WidgetType:
         return WidgetType.CUSTOM_DROPDOWN
     if role in ("radio", "radiogroup"):
         return WidgetType.RADIO
+    if locator.locator('[role="radio"]').count() > 0:
+        # The element itself carries no role, but wraps one or more
+        # role="radio" descendants -- confirmed on a real site (Aviva),
+        # where a fragmented multi-option question's real control ends up
+        # being the plain <div> shared parent of several single-radio
+        # radiogroups, not something with role="radiogroup" of its own.
+        return WidgetType.RADIO
 
     if tag in ("input", "textarea") and input_type in _TEXT_LIKE_INPUT_TYPES:
         if locator.get_attribute("readonly") is not None:

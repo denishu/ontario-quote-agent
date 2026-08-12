@@ -147,6 +147,38 @@ def test_discover_fields_finds_a_controls_own_aria_label(page):
     assert pairs["Company name"].get_attribute("id") == "company-name"
 
 
+def test_discover_fields_groups_fragmented_radiogroups_under_shared_parent(page):
+    # "New"/"Used"/"Demo under 5,000 kms" are each their own separate
+    # role="radiogroup" (one radio each) instead of one group with three
+    # options -- confirmed on a real site (Aviva). Their shared parent
+    # carries the real question as its own aria-label and must be
+    # discovered exactly once, as one field, not three fragments.
+    pairs = discover_fields(page)
+    labels = [label for label, _ in pairs]
+
+    assert labels.count("What was the condition of your car when you got it") == 1
+    assert "New" not in labels
+    assert "Used" not in labels
+    assert "Demo under 5,000 kms" not in labels
+
+    control = dict(pairs)["What was the condition of your car when you got it"]
+    assert control.get_attribute("id") == "fragmented-condition"
+
+
+def test_fill_visible_fields_fills_a_fragmented_radiogroup(page):
+    intake = make_intake()
+
+    def llm_fallback(label: str) -> str | None:
+        return "vehicles[].new_or_used_at_purchase" if "condition of your car" in label else None
+
+    intake.vehicles[0].new_or_used_at_purchase = "used"
+    report = fill_visible_fields(page, intake, llm_fallback=llm_fallback)
+
+    assert report.filled["What was the condition of your car when you got it"] == "vehicles[].new_or_used_at_purchase"
+    checked = page.locator("#fragmented-condition [role='radio'][aria-checked='true']")
+    assert checked.inner_text() == "Used"
+
+
 def test_discover_fields_does_not_double_count_a_labeled_controls_aria_label(page):
     # "#first-name" is already discovered via its real <label for=...>.
     # If it also happened to carry its own aria-label, it must not show up

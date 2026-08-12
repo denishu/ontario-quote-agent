@@ -43,6 +43,14 @@ def test_detects_radio_by_role(page):
     assert detect_widget_type(option) == WidgetType.RADIO
 
 
+def test_detects_radio_via_role_less_wrapper_of_radio_descendants(page):
+    # "#fragmented-condition" carries no role of its own -- confirmed on a
+    # real site (Aviva) that a fragmented multi-option question's real
+    # shared-parent control ends up being a plain <div> like this, not
+    # something with role="radiogroup" itself.
+    assert detect_widget_type(page.locator("#fragmented-condition")) == WidgetType.RADIO
+
+
 def test_readonly_date_field_is_unknown_not_text(page):
     # Confirmed firsthand: typing into these silently fails on real sites.
     # Must not be classified as a plain fillable text field.
