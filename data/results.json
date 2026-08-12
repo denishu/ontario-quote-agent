@@ -15,7 +15,7 @@
       "artifact_ref": "evidence/aviva-direct-20260812T082400Z.txt"
     },
     "confidence": "low",
-    "failure_reason": "Full intake flow completes successfully (vehicle, use, and driver details all confirmed filled, real quote number issued), but the terminal step offers only \"Email me my quote\" or \"Buy now\" -- no on-page premium/coverage display, PDF, or other scrapable quote artifact exists.",
+    "failure_reason": "Automation completed intake flow and obtained quote number but stopped at final step because both remaining options (purchase or email retrieval) exceed tool scope.",
     "next_action": "Requires a human to either complete the purchase (out of scope -- this tool never binds a policy) or retrieve the emailed quote manually (out of scope -- no email-scraping capability)."
   },
   {
@@ -34,7 +34,7 @@
       "artifact_ref": "evidence/onlia-broker-20260812T082400Z.txt"
     },
     "confidence": "low",
-    "failure_reason": "Automation correctly fills every step of the personal-info flow (name, DOB, address via AddressComplete, licence, vehicle) but the \"Start My Quote\" button is gated behind a required Terms of Use / Privacy Policy consent checkbox.",
+    "failure_reason": "Automation completed all data entry fields but stopped at Terms of Use checkbox requiring manual human consent before proceeding.",
     "next_action": "Requires a human to review and check the consent checkbox themselves -- this tool never checks a consent/agreement box on the user's behalf."
   }
 ]

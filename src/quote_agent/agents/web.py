@@ -68,11 +68,19 @@ def build_result(
     intake: IntakeProfile,
     outcome: QuoteObtained | NonQuoteOutcome,
     evidence_dir: Path | None = None,
+    summarize: Callable[[QuoteStatus, str], str] | None = None,
 ) -> ResultEntry:
     """Turn a flow's outcome into a validated ResultEntry: capture redacted
     evidence, and — for a real quote — run it through the deterministic
     coverage normalizer to decide quoted_comparable vs
     quoted_non_comparable.
+
+    summarize, when given, replaces a NonQuoteOutcome's own failure_reason
+    (otherwise a hand-written string from whoever wrote the flow) with one
+    generated from the actual raw_evidence_text -- e.g. summarize_outcome
+    from summarize.py. Optional and defaulting to None, the same shape as
+    resolve_field()'s llm_fallback, so this never requires network access
+    or an API key unless the caller explicitly wants it.
     """
     artifact_ref = save_evidence(
         entry.registry_id, outcome.raw_evidence_text, intake, evidence_dir=evidence_dir
@@ -98,12 +106,16 @@ def build_result(
             confidence=outcome.confidence,
         )
 
+    failure_reason = outcome.failure_reason
+    if summarize is not None:
+        failure_reason = summarize(outcome.status, outcome.raw_evidence_text)
+
     return ResultEntry(
         registry_id=entry.registry_id,
         status=outcome.status,
         evidence=evidence,
         confidence=outcome.confidence,
-        failure_reason=outcome.failure_reason,
+        failure_reason=failure_reason,
         next_action=outcome.next_action,
     )
 
@@ -113,10 +125,12 @@ def run_web_attempt(
     intake: IntakeProfile,
     flow: WebFlow,
     evidence_dir: Path | None = None,
+    summarize: Callable[[QuoteStatus, str], str] | None = None,
 ) -> ResultEntry:
     """The generic orchestrator: enforce the bounded-retry policy, catch
     every safety-relevant signal a flow can raise, and always return a
-    valid ResultEntry.
+    valid ResultEntry. summarize is passed straight through to
+    build_result() -- see its docstring.
     """
     try:
         outcome: QuoteObtained | NonQuoteOutcome = run_with_bounded_retry(lambda: flow(intake))
@@ -149,4 +163,4 @@ def run_web_attempt(
             next_action="Needs manual investigation",
         )
 
-    return build_result(entry, intake, outcome, evidence_dir=evidence_dir)
+    return build_result(entry, intake, outcome, evidence_dir=evidence_dir, summarize=summarize)

@@ -3,6 +3,7 @@ from quote_agent.agents.flow import FlowResult, StepResult, find_next_action, ru
 from quote_agent.agents.generic_flow import make_generic_flow
 from quote_agent.agents.loop import FillReport, discover_fields, fill_visible_fields
 from quote_agent.agents.report_format import format_fill_report, format_flow_result
+from quote_agent.agents.summarize import summarize_outcome
 from quote_agent.agents.policy import (
     CaptchaDetected,
     StopBeforeSensitiveAction,
@@ -45,4 +46,5 @@ __all__ = [
     "run_flow_steps",
     "run_web_attempt",
     "run_with_bounded_retry",
+    "summarize_outcome",
 ]
