@@ -17,25 +17,8 @@ doesn't depend on the value happening to match anything.
 from quote_agent.agents.flow import FlowResult
 from quote_agent.agents.loop import FillReport
 from quote_agent.mapping import get_field_value
+from quote_agent.mapping.sensitive import is_sensitive_path as _is_sensitive_path
 from quote_agent.models import IntakeProfile
-
-_SENSITIVE_PATH_PREFIXES = (
-    "identity.legal_name",
-    "identity.first_name",
-    "identity.last_name",
-    "identity.date_of_birth",
-    "identity.dob_",  # dob_day/dob_month/dob_year -- split date-of-birth virtual fields
-    "identity.licence_number",
-    "address.",  # street/unit/postal_code/city -- redact the whole block, not just some of it
-    "contact_email",
-    "contact_phone",
-    "vehicles[].vin",
-    "household[].name",
-)
-
-
-def _is_sensitive_path(path: str) -> bool:
-    return any(path == prefix or path.startswith(prefix) for prefix in _SENSITIVE_PATH_PREFIXES)
 
 
 def format_fill_report(

@@ -3,6 +3,7 @@ from quote_agent.agents.flow import FlowResult, StepResult, find_next_action, ru
 from quote_agent.agents.generic_flow import make_generic_flow
 from quote_agent.agents.loop import FillReport, discover_fields, fill_visible_fields
 from quote_agent.agents.report_format import format_fill_report, format_flow_result
+from quote_agent.agents.screenshot import capture_redacted_screenshot
 from quote_agent.agents.summarize import summarize_outcome
 from quote_agent.agents.policy import (
     CaptchaDetected,
@@ -33,6 +34,7 @@ __all__ = [
     "WebFlow",
     "WidgetType",
     "build_result",
+    "capture_redacted_screenshot",
     "detect_captcha",
     "detect_widget_type",
     "discover_fields",

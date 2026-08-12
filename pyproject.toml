@@ -13,6 +13,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
+    "Pillow>=10.0",
 ]
 
 [build-system]
