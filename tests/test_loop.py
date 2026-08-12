@@ -125,6 +125,19 @@ def test_discover_fields_falls_back_past_a_dangling_for_reference(page):
     assert control.is_visible()
 
 
+def test_discover_fields_does_not_guess_a_control_for_a_label_wrapping_several(page):
+    # "#dob-group"'s wrapping <label>Date of birth</label> (no for=) wraps
+    # three distinct controls, not one -- confirmed on a real site (Aviva).
+    # Guessing the first one would both mislabel it and block its own
+    # correct, distinct aria-label from ever being discovered.
+    pairs = dict(discover_fields(page))
+
+    assert "Date of birth" not in pairs
+    assert pairs["Enter the month you were born"].get_attribute("id") == "dob-month"
+    assert pairs["Enter the day you were born"].get_attribute("id") == "dob-day"
+    assert pairs["Enter the year you were born"].get_attribute("id") == "dob-year"
+
+
 def test_discover_fields_does_not_fill_a_honeypot_field(page):
     # "#honeypot-input" has a real for= association resolving to a control
     # with its own real layout box, so a naive check on the control alone
@@ -196,6 +209,22 @@ def test_discover_fields_groups_fragmented_radiogroups_under_shared_parent(page)
 
     control = dict(pairs)["What was the condition of your car when you got it"]
     assert control.get_attribute("id") == "fragmented-condition"
+
+
+def test_discover_fields_does_not_rediscover_a_grouped_radio_input_by_its_own_aria_label(page):
+    # "#fragmented-condition-inputs" uses real <input role="radio"
+    # aria-label="..."> options (unlike #fragmented-condition's plain
+    # <span> text, which has no aria-label of its own and so never
+    # exercised this bug) -- confirmed on a real site (Aviva). Once
+    # grouped under its shared parent, each option's own aria-label
+    # ("New"/"Used") must not surface it a second time as its own
+    # spurious standalone field.
+    pairs = discover_fields(page)
+    labels = [label for label, _ in pairs]
+
+    assert labels.count("Real condition question") == 1
+    assert "New" not in labels
+    assert "Used" not in labels
 
 
 def test_fill_visible_fields_fills_a_fragmented_radiogroup(page):

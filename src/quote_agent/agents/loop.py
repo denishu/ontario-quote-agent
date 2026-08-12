@@ -73,11 +73,17 @@ def _resolve_labeled_control(label: Locator) -> Locator | None:
         return None
 
     wrapped = label.locator("input, select, textarea")
-    for i in range(wrapped.count()):
-        candidate = wrapped.nth(i)
-        if candidate.is_visible():
-            return candidate
-
+    visible_wrapped = [wrapped.nth(i) for i in range(wrapped.count()) if wrapped.nth(i).is_visible()]
+    if len(visible_wrapped) == 1:
+        return visible_wrapped[0]
+    # A label wrapping *more than one* control (no for=) is ambiguous, not
+    # just permissive -- confirmed on a real site (Aviva): a group-level
+    # <label>Date of birth</label> wraps all three separate day/month/year
+    # boxes with no for= of its own. Blindly picking the first one doesn't
+    # just mislabel it -- it marks that control as already-discovered,
+    # which then blocks its own correct, distinct aria-label
+    # ("Enter the month you were born") from ever being tried at all,
+    # silently swapping in the whole unsplit date_of_birth value instead.
     return None
 
 
@@ -150,16 +156,30 @@ def discover_fields(page: Page) -> list[tuple[str, Locator]]:
                 # you got it"). That parent contains every fragment as a
                 # descendant, so it works directly as the field's control
                 # -- a single click search across it naturally finds
-                # whichever option's text matches. Marked once processed
-                # so the next sibling fragment doesn't re-add the same
-                # question a second (or third) time.
+                # whichever option's text matches. The parent is added to
+                # pairs once processed so the next sibling fragment doesn't
+                # re-add the same question a second (or third) time -- but
+                # every fragment's own radio still gets marked discovered
+                # on every pass, not just the first: confirmed on a real
+                # site (Aviva) that skipping this for later siblings (once
+                # the parent's own marker is already set) leaves their own
+                # aria-label ("Used", "Demo under 5,000 kms" -- its actual
+                # radio options are real <input role="radio" aria-label="...">
+                # elements) exposed to being rediscovered a second time as
+                # its own spurious standalone field by the own-aria-label
+                # pass below, which can then resolve (a bare "Used" label
+                # is a plausible enough LLM guess) and fail outright, since
+                # clicking-by-text finds nothing inside a bare input with
+                # no text content.
                 parent = group.locator("xpath=..")
-                if parent.get_attribute(_DISCOVERED_MARKER) is not None:
-                    continue
                 parent_label = (parent.get_attribute("aria-label") or "").strip()
                 if parent_label:
-                    parent.evaluate(f"el => el.setAttribute('{_DISCOVERED_MARKER}', '1')")
-                    pairs.append((parent_label, parent))
+                    group.locator('[role="radio"]').first.evaluate(
+                        f"el => el.setAttribute('{_DISCOVERED_MARKER}', '1')"
+                    )
+                    if parent.get_attribute(_DISCOVERED_MARKER) is None:
+                        parent.evaluate(f"el => el.setAttribute('{_DISCOVERED_MARKER}', '1')")
+                        pairs.append((parent_label, parent))
                     continue
 
             text = (group.get_attribute("aria-label") or "").strip()

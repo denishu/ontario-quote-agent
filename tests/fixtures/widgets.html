@@ -110,6 +110,19 @@
     <label>Terms of Use and Privacy Policy.</label>
   </div>
 
+  <!-- Group-level label wrapping multiple distinct controls, no for= --
+       confirmed on a real site (Aviva): <label>Date of birth</label> wraps
+       three separate day/month/year boxes, each with its own real,
+       distinct aria-label. Must NOT resolve to any one of them -- doing
+       so marks that control as already-discovered, silently blocking its
+       own correct aria-label pass from ever running. -->
+  <label>Date of birth</label>
+  <div id="dob-group">
+    <input id="dob-month" type="text" aria-label="Enter the month you were born">
+    <input id="dob-day" type="text" aria-label="Enter the day you were born">
+    <input id="dob-year" type="text" aria-label="Enter the year you were born">
+  </div>
+
   <!-- Anti-bot honeypot: a real for= association that resolves cleanly to
        a control with its own layout box (so a naive is_visible() check on
        the CONTROL alone passes) -- but the <label> itself is display:none,
@@ -153,6 +166,22 @@
     <div role="radiogroup" aria-label="Used"><span role="radio" aria-checked="false" class="chip">Used</span></div>
     <div role="radiogroup" aria-label="Demo under 5,000 kms">
       <span role="radio" aria-checked="false" class="chip">Demo under 5,000 kms</span>
+    </div>
+  </div>
+
+  <!-- Fragmented radiogroup using real <input role="radio" aria-label="...">
+       options (not styled <span> text like #fragmented-condition above) --
+       confirmed on a real site (Aviva) that its actual radio options are
+       marked up exactly this way. Each option is itself a real element
+       the own-aria-label pass would find directly; must not be
+       rediscovered as its own spurious field once grouped under its
+       parent. -->
+  <div aria-label="Real condition question" id="fragmented-condition-inputs">
+    <div role="radiogroup" aria-label="New">
+      <input type="radio" role="radio" aria-label="New" class="chip">
+    </div>
+    <div role="radiogroup" aria-label="Used">
+      <input type="radio" role="radio" aria-label="Used" class="chip">
     </div>
   </div>
 
