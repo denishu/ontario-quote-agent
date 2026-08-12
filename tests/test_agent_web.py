@@ -164,6 +164,30 @@ def test_no_summarize_keeps_the_flows_own_failure_reason(tmp_path: Path):
     assert result.failure_reason == "CAPTCHA or anti-automation barrier presented; stopped without evading"
 
 
+def test_captcha_screenshot_ref_propagates_through_to_evidence(tmp_path: Path):
+    # A site flow that's still inside its own try/finally (page/browser
+    # still open) can set screenshot_ref on the caught exception before
+    # re-raising -- confirms that value survives all the way through to
+    # the final ResultEntry's Evidence, not just the exception itself.
+    def flow(profile):
+        exc = CaptchaDetected(raw_evidence_text="Please complete the CAPTCHA")
+        exc.screenshot_ref = "evidence/aviva-direct-20260812T000000Z.png"
+        raise exc
+
+    result = run_web_attempt(make_entry(), make_intake(), flow, evidence_dir=tmp_path)
+
+    assert result.evidence.screenshot_ref == "evidence/aviva-direct-20260812T000000Z.png"
+
+
+def test_screenshot_ref_defaults_to_none_when_not_set(tmp_path: Path):
+    def flow(profile):
+        raise CaptchaDetected(raw_evidence_text="Please complete the CAPTCHA")
+
+    result = run_web_attempt(make_entry(), make_intake(), flow, evidence_dir=tmp_path)
+
+    assert result.evidence.screenshot_ref is None
+
+
 def test_unexpected_error_maps_to_unresolved_without_crashing(tmp_path: Path):
     def flow(profile):
         raise RuntimeError("something unexpected")

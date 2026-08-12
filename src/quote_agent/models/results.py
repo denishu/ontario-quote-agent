@@ -14,14 +14,16 @@ class Confidence(str, Enum):
 
 
 class Evidence(StrictModel):
-    """Required on every result regardless of status. artifact_ref points
-    into evidence/ (gitignored) — never a raw, unredacted capture.
+    """Required on every result regardless of status. artifact_ref and
+    screenshot_ref both point into evidence/ (gitignored) — never a raw,
+    unredacted capture.
     """
 
     timestamp: str  # ISO 8601 datetime
     source_url: str | None = None
     public_phone_route: str | None = None
-    artifact_ref: str  # redacted screenshot, structured call note, or response reference
+    artifact_ref: str  # redacted text snippet: structured call note or response reference
+    screenshot_ref: str | None = None  # redacted screenshot, when a flow captured one
 
 
 class ResultEntry(StrictModel):

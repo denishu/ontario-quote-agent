@@ -80,6 +80,8 @@ def main() -> None:
         print(f"{r.registry_id:22s} {r.status.value:20s} premium={r.premium_annual}")
         if r.failure_reason:
             print(f"    reason: {r.failure_reason}")
+        if r.evidence.screenshot_ref:
+            print(f"    screenshot: {r.evidence.screenshot_ref}")
 
     comparable = [r for r in final_results if r.status is QuoteStatus.QUOTED_COMPARABLE]
     print(f"\n{len(comparable)} comparable quote(s) out of {len(final_results)} attempted source(s).")

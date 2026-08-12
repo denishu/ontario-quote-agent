@@ -45,6 +45,7 @@ class QuoteObtained:
     returned_legal_underwriter: str
     discounts: list[Discount] = field(default_factory=list)
     confidence: Confidence = Confidence.HIGH
+    screenshot_ref: str | None = None  # set by a flow that captured one via capture_redacted_screenshot
 
 
 @dataclass
@@ -58,6 +59,7 @@ class NonQuoteOutcome:
     failure_reason: str
     next_action: str
     confidence: Confidence = Confidence.LOW
+    screenshot_ref: str | None = None  # set by a flow that captured one via capture_redacted_screenshot
 
 
 WebFlow = Callable[[IntakeProfile], QuoteObtained | NonQuoteOutcome]
@@ -90,6 +92,7 @@ def build_result(
         source_url=entry.quote_url,
         public_phone_route=entry.public_phone_route,
         artifact_ref=artifact_ref,
+        screenshot_ref=outcome.screenshot_ref,
     )
 
     if isinstance(outcome, QuoteObtained):
@@ -140,6 +143,7 @@ def run_web_attempt(
             raw_evidence_text=exc.raw_evidence_text,
             failure_reason="CAPTCHA or anti-automation barrier presented; stopped without evading",
             next_action="Retry manually later, or route through a licensed intermediary instead",
+            screenshot_ref=exc.screenshot_ref,
         )
     except StopBeforeSensitiveAction as exc:
         outcome = NonQuoteOutcome(
@@ -147,6 +151,7 @@ def run_web_attempt(
             raw_evidence_text=exc.raw_evidence_text,
             failure_reason=exc.reason,
             next_action="Applicant must complete this step manually",
+            screenshot_ref=exc.screenshot_ref,
         )
     except TransientAttemptError as exc:
         outcome = NonQuoteOutcome(

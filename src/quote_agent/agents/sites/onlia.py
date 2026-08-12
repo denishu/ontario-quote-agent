@@ -41,20 +41,38 @@ clicks Continue itself. In headless mode there's no one to hand off to,
 so it terminates at MANUAL_HANDOFF immediately, same as before.
 """
 
-from datetime import date as _date
+from datetime import date as _date, datetime, timezone
 
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import Page, sync_playwright
 
 from quote_agent.agents.flow import find_next_action, pause_for_human
 from quote_agent.agents.loop import discover_fields, fill_visible_fields
-from quote_agent.agents.policy import guard_against_sensitive_action, is_sensitive_action
+from quote_agent.agents.policy import (
+    CaptchaDetected,
+    StopBeforeSensitiveAction,
+    guard_against_sensitive_action,
+    is_sensitive_action,
+)
+from quote_agent.agents.screenshot import capture_redacted_screenshot
 from quote_agent.agents.web import NonQuoteOutcome, QuoteObtained
 from quote_agent.agents.widgets import resolve_autocomplete, set_date
+from quote_agent.evidence.store import EVIDENCE_DIR
 from quote_agent.models import IntakeProfile
 from quote_agent.models.status import QuoteStatus
 
 FORM_URL = "https://app.onlia.ca/#/auto/personal-info?Affinity_Group=Onlia&utm_content=auto_quote_button"
 _MAX_STEPS = 30
+
+
+def _capture_screenshot(page: Page) -> str:
+    """Same naming convention as evidence.store.save_evidence, so a
+    text snippet and its matching screenshot from the same attempt sit
+    next to each other in evidence/ with obviously-paired filenames.
+    """
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    filename = f"onlia-broker-{timestamp}.png"
+    capture_redacted_screenshot(page, EVIDENCE_DIR / filename)
+    return f"evidence/{filename}"
 
 # Confirmed against the live page: real address suggestions and calendar
 # day cells, respectively -- see resolve_autocomplete/set_date call sites
@@ -187,6 +205,7 @@ def onlia_personal_info_flow(intake: IntakeProfile, *, headless: bool = True) ->
                         "everything fillable up to this point was completed automatically."
                     ),
                     next_action="Applicant must check the Terms of Use/Privacy Policy box and click Continue manually",
+                    screenshot_ref=_capture_screenshot(page),
                 )
 
             return NonQuoteOutcome(
@@ -194,6 +213,16 @@ def onlia_personal_info_flow(intake: IntakeProfile, *, headless: bool = True) ->
                 raw_evidence_text=page.inner_text("body"),
                 failure_reason=f"Personal-info step did not resolve within {_MAX_STEPS} steps",
                 next_action="Needs manual investigation -- possible unmapped field or changed page structure",
+                screenshot_ref=_capture_screenshot(page),
             )
+        except (CaptchaDetected, StopBeforeSensitiveAction) as exc:
+            # Caught here, not left to propagate straight to the caller,
+            # specifically so a screenshot can still be taken while the
+            # page/browser are open -- by the time run_web_attempt's own
+            # except clause would see this exception, this function's
+            # `finally: browser.close()` below has already run, and
+            # there'd be nothing left to screenshot.
+            exc.screenshot_ref = _capture_screenshot(page)
+            raise
         finally:
             browser.close()

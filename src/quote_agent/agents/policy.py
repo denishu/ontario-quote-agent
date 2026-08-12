@@ -20,6 +20,14 @@ class CaptchaDetected(Exception):
     def __init__(self, raw_evidence_text: str):
         super().__init__("CAPTCHA or anti-automation barrier detected")
         self.raw_evidence_text = raw_evidence_text
+        # Left unset here deliberately -- this module stays Playwright-
+        # free by design (see module docstring), so it can't capture a
+        # screenshot itself. A site-specific flow that still has the live
+        # page open (this exception is raised, and thus caught, before
+        # its own `finally: browser.close()` runs) can set this on the
+        # caught instance before re-raising; build_result() picks it up
+        # from there if present.
+        self.screenshot_ref: str | None = None
 
 
 class StopBeforeSensitiveAction(Exception):
@@ -32,6 +40,7 @@ class StopBeforeSensitiveAction(Exception):
         super().__init__(reason)
         self.raw_evidence_text = raw_evidence_text
         self.reason = reason
+        self.screenshot_ref: str | None = None  # see CaptchaDetected's note above
 
 
 class TransientAttemptError(Exception):

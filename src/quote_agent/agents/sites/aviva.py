@@ -53,15 +53,31 @@ run_flow_steps, select_native, discover_fields) all have full local
 fixture coverage of their own.
 """
 
-from playwright.sync_api import sync_playwright
+from datetime import datetime, timezone
+
+from playwright.sync_api import Page, sync_playwright
 
 from quote_agent.agents.flow import run_flow_steps
+from quote_agent.agents.policy import CaptchaDetected, StopBeforeSensitiveAction
+from quote_agent.agents.screenshot import capture_redacted_screenshot
 from quote_agent.agents.web import NonQuoteOutcome, QuoteObtained, WebFlow
+from quote_agent.evidence.store import EVIDENCE_DIR
 from quote_agent.mapping.llm_fallback import llm_resolve_field
 from quote_agent.models import IntakeProfile
 from quote_agent.models.status import QuoteStatus
 
 _MAX_STEPS = 30
+
+
+def _capture_screenshot(page: Page) -> str:
+    """Same naming convention as evidence.store.save_evidence, so a
+    text snippet and its matching screenshot from the same attempt sit
+    next to each other in evidence/ with obviously-paired filenames.
+    """
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    filename = f"aviva-direct-{timestamp}.png"
+    capture_redacted_screenshot(page, EVIDENCE_DIR / filename)
+    return f"evidence/{filename}"
 
 
 def make_aviva_flow(start_url: str, *, headless: bool = True) -> WebFlow:
@@ -119,7 +135,17 @@ def make_aviva_flow(start_url: str, *, headless: bool = True) -> WebFlow:
                         "tool never binds a policy) or retrieve the emailed quote manually "
                         "(out of scope -- no email-scraping capability)"
                     ),
+                    screenshot_ref=_capture_screenshot(page),
                 )
+            except (CaptchaDetected, StopBeforeSensitiveAction) as exc:
+                # Caught here, not left to propagate straight to the
+                # caller, specifically so a screenshot can still be taken
+                # while the page/browser are open -- by the time
+                # run_web_attempt's own except clause would see this
+                # exception, the finally block below has already closed
+                # the browser, and there'd be nothing left to screenshot.
+                exc.screenshot_ref = _capture_screenshot(page)
+                raise
             finally:
                 browser.close()
 
