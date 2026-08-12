@@ -6,42 +6,42 @@
 <title>QuoteON — Ontario Auto Insurance Quote Comparison</title>
 <style>
   :root {
-    --bg: #f6f7fb;
+    --bg: #eef5ee;
     --surface: #ffffff;
-    --border: #e2e5ee;
-    --text: #1a1d29;
-    --text-muted: #61667a;
-    --accent: #3454d1;
-    --accent-soft: #eaeeff;
-    --green: #1a8754;
-    --green-soft: #e6f6ee;
+    --border: #d3e3d1;
+    --text: #15261a;
+    --text-muted: #55705c;
+    --accent: #205c3b;
+    --accent-soft: #dcefe0;
+    --gold: #8a6d0a;
+    --gold-soft: #f7edcd;
     --amber: #a3660a;
     --amber-soft: #fdf2df;
-    --gray: #61667a;
-    --gray-soft: #eef0f5;
+    --gray: #5c6d61;
+    --gray-soft: #e9f0e8;
     --red: #b3261e;
     --red-soft: #fbe9e8;
-    --shadow: 0 1px 2px rgba(20, 24, 40, 0.04), 0 4px 16px rgba(20, 24, 40, 0.06);
+    --shadow: 0 1px 2px rgba(15, 30, 20, 0.05), 0 4px 16px rgba(15, 30, 20, 0.07);
   }
 
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #14161f;
-      --surface: #1c1f2b;
-      --border: #2b2f3f;
-      --text: #eceef5;
-      --text-muted: #9298ad;
-      --accent: #7c93f5;
-      --accent-soft: #232a4a;
-      --green: #4fd190;
-      --green-soft: #163629;
+      --bg: #0a1710;
+      --surface: #11271a;
+      --border: #22412e;
+      --text: #e6f4e9;
+      --text-muted: #93b39c;
+      --accent: #4fd18a;
+      --accent-soft: #16341f;
+      --gold: #e0c15a;
+      --gold-soft: #392f11;
       --amber: #eab35c;
       --amber-soft: #3a2e14;
-      --gray: #9298ad;
-      --gray-soft: #262a38;
+      --gray: #93b39c;
+      --gray-soft: #1b3123;
       --red: #f28b85;
       --red-soft: #3a1e1d;
-      --shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 4px 20px rgba(0, 0, 0, 0.35);
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.25), 0 4px 20px rgba(0, 0, 0, 0.4);
     }
   }
 
@@ -80,7 +80,7 @@
     width: 40px;
     height: 40px;
     border-radius: 10px;
-    background: linear-gradient(135deg, var(--accent), #7c93f5);
+    background: linear-gradient(135deg, var(--accent), #52b788);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -201,8 +201,8 @@
     border-radius: 50%;
   }
 
-  .badge.status-quoted { background: var(--green-soft); color: var(--green); }
-  .badge.status-quoted .badge-dot { background: var(--green); }
+  .badge.status-quoted { background: var(--gold-soft); color: var(--gold); }
+  .badge.status-quoted .badge-dot { background: var(--gold); }
   .badge.status-pending { background: var(--amber-soft); color: var(--amber); }
   .badge.status-pending .badge-dot { background: var(--amber); }
   .badge.status-blocked { background: var(--red-soft); color: var(--red); }
