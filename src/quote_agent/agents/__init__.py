@@ -2,7 +2,7 @@ from quote_agent.agents.detect import WidgetType, detect_widget_type
 from quote_agent.agents.flow import FlowResult, StepResult, find_next_action, run_flow_steps
 from quote_agent.agents.generic_flow import make_generic_flow
 from quote_agent.agents.loop import FillReport, discover_fields, fill_visible_fields
-from quote_agent.agents.parse_quote import extract_quote_from_text
+from quote_agent.agents.parse_quote import extract_quote_from_text, extract_quotes_from_text
 from quote_agent.agents.report_format import format_fill_report, format_flow_result
 from quote_agent.agents.screenshot import capture_redacted_screenshot
 from quote_agent.agents.summarize import summarize_outcome
@@ -40,6 +40,7 @@ __all__ = [
     "detect_widget_type",
     "discover_fields",
     "extract_quote_from_text",
+    "extract_quotes_from_text",
     "fill_visible_fields",
     "find_next_action",
     "format_fill_report",

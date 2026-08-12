@@ -1,7 +1,10 @@
-"""Turn a saved quote-result page's text into a QuoteObtained -- for a
-source whose quote lands as an on-page result (confirmed on a real site,
-belairdirect: price plus a coverage breakdown, no PDF or other
-downloadable artifact), not something live automation reached itself.
+"""Turn a saved quote-result page's text into one or more QuoteObtained --
+for a source whose quote lands as an on-page result (confirmed on two
+real sites: belairdirect shows a full coverage breakdown alongside the
+price; MyChoice, an aggregator, shows several underwriters' prices side
+by side with no coverage breakdown at all), not something live
+automation reached itself, and never a PDF or other downloadable
+artifact.
 
 Decouples the "AI compares quotes" demo story from live-run risk: save
 the result page locally once, parse it here, and it feeds through the
@@ -10,9 +13,9 @@ result would -- same ResultEntry shape, same deterministic coverage
 diff, same QuoteON display.
 
 Uses Claude's tool-use for structured extraction, not free-text parsing
--- the model is forced to return values matching a fixed JSON schema
-(record_quote's input_schema below), so a premium or deductible comes
-back as an actual typed number, not something regexed out of prose.
+-- the model is forced to return values matching a fixed JSON schema, so
+a premium or deductible comes back as an actual typed number, not
+something regexed out of prose.
 """
 
 import os
@@ -22,60 +25,93 @@ from anthropic import Anthropic
 from dotenv import load_dotenv
 
 from quote_agent.agents.web import QuoteObtained
-from quote_agent.models import CoverageConfig, Discount
+from quote_agent.models import Confidence, CoverageConfig, Discount
 
 load_dotenv()
 
 _MODEL = "claude-haiku-4-5-20251001"
 _MAX_PAGE_CHARS = 8000  # a results page's relevant content, not an unbounded dump
 
+_QUOTE_PROPERTIES = {
+    "premium_annual": {"type": "number", "description": "Annual premium in dollars"},
+    "premium_monthly": {
+        "type": ["number", "null"],
+        "description": "Monthly premium in dollars, if shown separately from the annual figure",
+    },
+    "returned_legal_underwriter": {
+        "type": "string",
+        "description": (
+            "The actual underwriting insurer's name, e.g. 'Wawanesa Mutual' -- NOT a brokerage "
+            "or intermediary name (confirmed on a real site, MyChoice: 'Brokered by Hub "
+            "International' names the broker, not the insurer actually underwriting the risk)"
+        ),
+    },
+    # Coverage detail fields are genuinely optional, not just permissive --
+    # confirmed on a real site (MyChoice) that a comparison-card view can
+    # show only price and underwriter with no coverage breakdown at all.
+    # Forcing these as required would make the model guess at numbers
+    # that simply aren't on the page, which is exactly the fabrication
+    # the challenge brief warns against ("reported without inflation or
+    # hallucination"). Left null when not shown; extract_quote_from_text
+    # falls back to the benchmark for those and marks confidence
+    # accordingly rather than claiming an unverified coverage match.
+    "third_party_liability_limit": {
+        "type": ["integer", "null"],
+        "description": "Third-party liability limit in dollars, e.g. 1000000 -- only if actually shown",
+    },
+    "dcpd_included": {
+        "type": ["boolean", "null"],
+        "description": "Whether Direct Compensation Property Damage is included -- only if actually shown",
+    },
+    "dcpd_deductible": {"type": ["number", "null"]},
+    "collision_deductible": {"type": ["number", "null"]},
+    "comprehensive_deductible": {"type": ["number", "null"]},
+    "all_perils_deductible": {"type": ["number", "null"]},
+    "optional_benefits": {
+        "type": "object",
+        "description": (
+            "Map of optional benefit name (as shown on the page) to its status, for "
+            "whatever benefits are actually visible -- do not invent ones that aren't shown"
+        ),
+        "additionalProperties": {"type": "string", "enum": ["included", "excluded", "unavailable", "unknown"]},
+    },
+    "endorsements": {
+        "type": "array",
+        "items": {"type": "string"},
+        "description": "Named endorsements shown on the page, e.g. 'OPCF 44R'",
+    },
+    "discounts": {
+        "type": "array",
+        "items": {
+            "type": "object",
+            "properties": {"name": {"type": "string"}, "applied": {"type": "boolean"}},
+            "required": ["name", "applied"],
+        },
+    },
+}
+_QUOTE_REQUIRED = ["premium_annual", "returned_legal_underwriter"]
+
 _EXTRACTION_TOOL = {
     "name": "record_quote",
-    "description": "Record the structured details of an auto insurance quote shown on a results page.",
+    "description": "Record the structured details of the one auto insurance quote shown on this results page.",
+    "input_schema": {"type": "object", "properties": _QUOTE_PROPERTIES, "required": _QUOTE_REQUIRED},
+}
+
+_MULTI_EXTRACTION_TOOL = {
+    "name": "record_quotes",
+    "description": (
+        "Record every distinct insurance quote shown on this aggregator/comparison results "
+        "page -- one entry per underwriter, in the order they appear on the page."
+    ),
     "input_schema": {
         "type": "object",
         "properties": {
-            "premium_annual": {"type": "number", "description": "Annual premium in dollars"},
-            "premium_monthly": {
-                "type": ["number", "null"],
-                "description": "Monthly premium in dollars, if shown separately from the annual figure",
-            },
-            "returned_legal_underwriter": {
-                "type": "string",
-                "description": "The insurer/underwriter name actually shown on the page",
-            },
-            "third_party_liability_limit": {
-                "type": "integer",
-                "description": "Third-party liability limit in dollars, e.g. 1000000 or 2000000",
-            },
-            "dcpd_included": {"type": "boolean", "description": "Whether Direct Compensation Property Damage is included"},
-            "dcpd_deductible": {"type": ["number", "null"]},
-            "collision_deductible": {"type": ["number", "null"]},
-            "comprehensive_deductible": {"type": ["number", "null"]},
-            "all_perils_deductible": {"type": ["number", "null"]},
-            "optional_benefits": {
-                "type": "object",
-                "description": (
-                    "Map of optional benefit name (as shown on the page) to its status, for "
-                    "whatever benefits are actually visible -- do not invent ones that aren't shown"
-                ),
-                "additionalProperties": {"type": "string", "enum": ["included", "excluded", "unavailable", "unknown"]},
-            },
-            "endorsements": {
+            "quotes": {
                 "type": "array",
-                "items": {"type": "string"},
-                "description": "Named endorsements shown on the page, e.g. 'OPCF 44R'",
-            },
-            "discounts": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {"name": {"type": "string"}, "applied": {"type": "boolean"}},
-                    "required": ["name", "applied"],
-                },
-            },
+                "items": {"type": "object", "properties": _QUOTE_PROPERTIES, "required": _QUOTE_REQUIRED},
+            }
         },
-        "required": ["premium_annual", "returned_legal_underwriter", "third_party_liability_limit", "dcpd_included"],
+        "required": ["quotes"],
     },
 }
 
@@ -87,12 +123,12 @@ def _client() -> Anthropic:
     return Anthropic(api_key=api_key)
 
 
-def _real_llm_extract(page_text: str) -> dict:
+def _call_tool(page_text: str, tool: dict) -> dict:
     message = _client().messages.create(
         model=_MODEL,
-        max_tokens=1024,
-        tools=[_EXTRACTION_TOOL],
-        tool_choice={"type": "tool", "name": "record_quote"},
+        max_tokens=2048,
+        tools=[tool],
+        tool_choice={"type": "tool", "name": tool["name"]},
         messages=[
             {
                 "role": "user",
@@ -106,35 +142,25 @@ def _real_llm_extract(page_text: str) -> dict:
     raise RuntimeError("Model did not return a tool_use block")
 
 
-def extract_quote_from_text(
-    page_text: str,
-    benchmark: CoverageConfig,
-    *,
-    llm_extract: Callable[[str], dict] | None = None,
-) -> QuoteObtained:
-    """Parse a saved quote-result page's text into a QuoteObtained.
+def _real_llm_extract(page_text: str) -> dict:
+    return _call_tool(page_text, _EXTRACTION_TOOL)
 
-    benchmark supplies whatever the returned quote doesn't restate on its
-    own (effective_date, term_months, accident_benefits_mandatory,
-    uninsured_automobile_included, telematics_opt_in) -- a real quote
-    confirms the terms actually requested rather than re-displaying every
-    one of them, so assuming the site honoured what was asked for is the
-    honest default for fields the page genuinely doesn't show. Everything
-    the page does show (premium, liability limit, deductibles, DCPD,
-    optional benefits, endorsements, discounts) comes from the extraction
-    itself, not the benchmark.
 
-    llm_extract, when given, replaces the real Anthropic call -- same
-    injected-dependency shape as resolve_field's llm_fallback and
-    summarize_outcome, so tests never need network access or an API key.
+def _real_llm_extract_multi(page_text: str) -> dict:
+    return _call_tool(page_text, _MULTI_EXTRACTION_TOOL)
+
+
+def _build_quote_obtained(page_text: str, data: dict, benchmark: CoverageConfig) -> QuoteObtained:
+    """Shared by extract_quote_from_text and extract_quotes_from_text --
+    one extracted quote's raw dict, benchmark-filled where the page
+    didn't show something, becomes one QuoteObtained.
     """
-    extract = llm_extract or _real_llm_extract
-    data = extract(page_text)
-
+    coverage_shown = data.get("third_party_liability_limit") is not None and data.get("dcpd_included") is not None
     coverage = benchmark.model_copy(
         update={
-            "third_party_liability_limit": data["third_party_liability_limit"],
-            "dcpd_included": data["dcpd_included"],
+            "third_party_liability_limit": data.get("third_party_liability_limit")
+            or benchmark.third_party_liability_limit,
+            "dcpd_included": data.get("dcpd_included") if data.get("dcpd_included") is not None else benchmark.dcpd_included,
             "dcpd_deductible": data.get("dcpd_deductible"),
             "collision_deductible": data.get("collision_deductible"),
             "comprehensive_deductible": data.get("comprehensive_deductible"),
@@ -152,4 +178,58 @@ def extract_quote_from_text(
         returned_coverage=coverage,
         returned_legal_underwriter=data["returned_legal_underwriter"],
         discounts=discounts,
+        # medium, not high, when coverage was assumed from the benchmark
+        # rather than confirmed on the page itself -- an exact premium
+        # was still returned, but "matching coverage" per the Confidence
+        # rubric isn't independently verified in that case.
+        confidence=Confidence.HIGH if coverage_shown else Confidence.MEDIUM,
     )
+
+
+def extract_quote_from_text(
+    page_text: str,
+    benchmark: CoverageConfig,
+    *,
+    llm_extract: Callable[[str], dict] | None = None,
+) -> QuoteObtained:
+    """Parse a saved single-quote results page's text into a QuoteObtained.
+
+    benchmark supplies whatever the returned quote doesn't restate on its
+    own -- a real quote confirms the terms actually requested rather than
+    re-displaying every one of them, so assuming the site honoured what
+    was asked for is the honest default for fields the page genuinely
+    doesn't show (see _build_quote_obtained for exactly which fields and
+    how confidence reflects that).
+
+    llm_extract, when given, replaces the real Anthropic call -- same
+    injected-dependency shape as resolve_field's llm_fallback and
+    summarize_outcome, so tests never need network access or an API key.
+    """
+    extract = llm_extract or _real_llm_extract
+    data = extract(page_text)
+    return _build_quote_obtained(page_text, data, benchmark)
+
+
+def extract_quotes_from_text(
+    page_text: str,
+    benchmark: CoverageConfig,
+    *,
+    llm_extract: Callable[[str], dict] | None = None,
+) -> list[QuoteObtained]:
+    """Parse a saved aggregator/comparison results page showing several
+    underwriters' quotes at once into one QuoteObtained per underwriter.
+
+    Confirmed on a real site (MyChoice): a comparison-card view can list
+    several distinct quotes on one page with no per-quote coverage
+    breakdown at all -- see _build_quote_obtained for how that's handled
+    (benchmark fallback, confidence downgrade), applied identically to
+    every quote here.
+
+    llm_extract, when given, replaces the real Anthropic call and should
+    return the same shape record_quotes' tool schema does (a dict with a
+    "quotes" list) -- same injected-dependency shape used throughout this
+    codebase, so tests never need network access or an API key.
+    """
+    extract = llm_extract or _real_llm_extract_multi
+    data = extract(page_text)
+    return [_build_quote_obtained(page_text, quote, benchmark) for quote in data["quotes"]]
