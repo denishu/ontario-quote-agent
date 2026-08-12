@@ -135,6 +135,18 @@
     filter: brightness(1.08);
   }
 
+  .btn-secondary {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    box-shadow: none;
+  }
+
+  .btn-secondary:hover {
+    background: var(--accent-soft);
+    filter: none;
+  }
+
   .safety-note {
     max-width: 360px;
     background: var(--surface);
@@ -355,7 +367,10 @@
         </div>
       </div>
       <div class="hero-right">
-        <a class="btn-new-quote" href="get-quote.html">+ New quote</a>
+        <div style="display: flex; gap: 8px;">
+          <a class="btn-new-quote" href="get-quote.html">+ New quote</a>
+          <a class="btn-new-quote btn-secondary" href="paste-quote.html">Paste a quote</a>
+        </div>
         <div class="safety-note">
           <strong>What this tool never does</strong>
           Never submits payment, clicks buy/sign/declaration, or binds a policy. Never bypasses a CAPTCHA or consent gate. A blocked or manual step is reported honestly, not worked around.

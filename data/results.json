@@ -40,80 +40,6 @@
     "next_action": "Requires a human to review and check the consent checkbox themselves -- this tool never checks a consent/agreement box on the user's behalf."
   },
   {
-    "registry_id": "wawanesa-via-mychoice",
-    "status": "quoted_non_comparable",
-    "returned_legal_underwriter": "Wawanesa Mutual",
-    "premium_annual": 3198.0,
-    "premium_monthly": null,
-    "returned_coverage": {
-      "effective_date": "2026-09-01",
-      "term_months": 12,
-      "third_party_liability_limit": 1000000,
-      "dcpd_included": true,
-      "dcpd_deductible": null,
-      "accident_benefits_mandatory": true,
-      "optional_benefits": {},
-      "uninsured_automobile_included": null,
-      "collision_deductible": 1000.0,
-      "comprehensive_deductible": 1000.0,
-      "all_perils_deductible": null,
-      "endorsements": [],
-      "telematics_opt_in": false
-    },
-    "coverage_variance": [
-      "endorsements",
-      "third_party_liability_limit"
-    ],
-    "discounts": [],
-    "evidence": {
-      "timestamp": "2026-08-12T18:44:22.974323+00:00",
-      "source_url": "https://www.mychoice.ca/insurance/car/ontario/",
-      "public_phone_route": null,
-      "artifact_ref": "evidence/wawanesa-via-mychoice-20260812T184422Z.txt",
-      "screenshot_ref": null
-    },
-    "confidence": "medium",
-    "failure_reason": null,
-    "next_action": null
-  },
-  {
-    "registry_id": "economical-via-mychoice",
-    "status": "quoted_non_comparable",
-    "returned_legal_underwriter": "Economical Mutual",
-    "premium_annual": 3369.0,
-    "premium_monthly": null,
-    "returned_coverage": {
-      "effective_date": "2026-09-01",
-      "term_months": 12,
-      "third_party_liability_limit": 1000000,
-      "dcpd_included": true,
-      "dcpd_deductible": null,
-      "accident_benefits_mandatory": true,
-      "optional_benefits": {},
-      "uninsured_automobile_included": null,
-      "collision_deductible": 1000.0,
-      "comprehensive_deductible": 1000.0,
-      "all_perils_deductible": null,
-      "endorsements": [],
-      "telematics_opt_in": false
-    },
-    "coverage_variance": [
-      "endorsements",
-      "third_party_liability_limit"
-    ],
-    "discounts": [],
-    "evidence": {
-      "timestamp": "2026-08-12T18:44:22.976336+00:00",
-      "source_url": "https://www.mychoice.ca/insurance/car/ontario/",
-      "public_phone_route": null,
-      "artifact_ref": "evidence/economical-via-mychoice-20260812T184422Z.txt",
-      "screenshot_ref": null
-    },
-    "confidence": "medium",
-    "failure_reason": null,
-    "next_action": null
-  },
-  {
     "registry_id": "pembridge-via-mychoice",
     "status": "quoted_non_comparable",
     "returned_legal_underwriter": "Pembridge",
@@ -140,10 +66,10 @@
     ],
     "discounts": [],
     "evidence": {
-      "timestamp": "2026-08-12T18:44:22.977810+00:00",
+      "timestamp": "2026-08-12T18:59:36.371474+00:00",
       "source_url": "https://www.mychoice.ca/insurance/car/ontario/",
       "public_phone_route": null,
-      "artifact_ref": "evidence/pembridge-via-mychoice-20260812T184422Z.txt",
+      "artifact_ref": "evidence/pembridge-via-mychoice-20260812T185936Z.txt",
       "screenshot_ref": null
     },
     "confidence": "medium",
@@ -177,10 +103,84 @@
     ],
     "discounts": [],
     "evidence": {
-      "timestamp": "2026-08-12T18:44:22.980285+00:00",
+      "timestamp": "2026-08-12T18:59:36.372761+00:00",
       "source_url": "https://www.mychoice.ca/insurance/car/ontario/",
       "public_phone_route": null,
-      "artifact_ref": "evidence/sgi-via-mychoice-20260812T184422Z.txt",
+      "artifact_ref": "evidence/sgi-via-mychoice-20260812T185936Z.txt",
+      "screenshot_ref": null
+    },
+    "confidence": "medium",
+    "failure_reason": null,
+    "next_action": null
+  },
+  {
+    "registry_id": "wawanesa-via-mychoice",
+    "status": "quoted_non_comparable",
+    "returned_legal_underwriter": "Wawanesa Mutual",
+    "premium_annual": 3198.0,
+    "premium_monthly": null,
+    "returned_coverage": {
+      "effective_date": "2026-09-01",
+      "term_months": 12,
+      "third_party_liability_limit": 1000000,
+      "dcpd_included": true,
+      "dcpd_deductible": null,
+      "accident_benefits_mandatory": true,
+      "optional_benefits": {},
+      "uninsured_automobile_included": null,
+      "collision_deductible": 1000.0,
+      "comprehensive_deductible": 1000.0,
+      "all_perils_deductible": null,
+      "endorsements": [],
+      "telematics_opt_in": false
+    },
+    "coverage_variance": [
+      "endorsements",
+      "third_party_liability_limit"
+    ],
+    "discounts": [],
+    "evidence": {
+      "timestamp": "2026-08-12T19:00:31.926252+00:00",
+      "source_url": "https://www.mychoice.ca/insurance/car/ontario/",
+      "public_phone_route": null,
+      "artifact_ref": "evidence/wawanesa-via-mychoice-20260812T190031Z.txt",
+      "screenshot_ref": null
+    },
+    "confidence": "medium",
+    "failure_reason": null,
+    "next_action": null
+  },
+  {
+    "registry_id": "economical-via-mychoice",
+    "status": "quoted_non_comparable",
+    "returned_legal_underwriter": "Economical Mutual",
+    "premium_annual": 3369.0,
+    "premium_monthly": null,
+    "returned_coverage": {
+      "effective_date": "2026-09-01",
+      "term_months": 12,
+      "third_party_liability_limit": 1000000,
+      "dcpd_included": true,
+      "dcpd_deductible": null,
+      "accident_benefits_mandatory": true,
+      "optional_benefits": {},
+      "uninsured_automobile_included": null,
+      "collision_deductible": 1000.0,
+      "comprehensive_deductible": 1000.0,
+      "all_perils_deductible": null,
+      "endorsements": [],
+      "telematics_opt_in": false
+    },
+    "coverage_variance": [
+      "endorsements",
+      "third_party_liability_limit"
+    ],
+    "discounts": [],
+    "evidence": {
+      "timestamp": "2026-08-12T19:00:31.927157+00:00",
+      "source_url": "https://www.mychoice.ca/insurance/car/ontario/",
+      "public_phone_route": null,
+      "artifact_ref": "evidence/economical-via-mychoice-20260812T190031Z.txt",
       "screenshot_ref": null
     },
     "confidence": "medium",
