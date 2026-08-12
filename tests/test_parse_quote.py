@@ -81,6 +81,29 @@ def test_extract_quote_from_text_preserves_unextracted_benchmark_fields():
     assert result.discounts == []
 
 
+def test_extract_quote_from_text_falls_back_to_benchmark_deductibles_too():
+    # The exact bug confirmed against a real MyChoice page: deductibles
+    # weren't falling back the same way liability_limit/dcpd_included
+    # already did, so a benchmark's real $1000 collision deductible was
+    # silently replaced with None and wrongly flagged as a coverage
+    # variance -- even though the page just didn't show it, the same as
+    # every other unshown field. Deductibles are user-selected intake
+    # inputs, same category as liability_limit/dcpd_included, so they get
+    # the same fallback treatment.
+    def fake_extract(page_text: str) -> dict:
+        return {"premium_annual": 500.0, "returned_legal_underwriter": "Test Insurer"}
+
+    benchmark = make_benchmark(
+        collision_deductible=1000, comprehensive_deductible=1000, all_perils_deductible=500, dcpd_deductible=0
+    )
+    result = extract_quote_from_text("some page text", benchmark, llm_extract=fake_extract)
+
+    assert result.returned_coverage.collision_deductible == 1000
+    assert result.returned_coverage.comprehensive_deductible == 1000
+    assert result.returned_coverage.all_perils_deductible == 500
+    assert result.returned_coverage.dcpd_deductible == 0
+
+
 def test_extract_quote_from_text_falls_back_to_benchmark_coverage_when_page_shows_none():
     # Confirmed on a real site (MyChoice): a comparison-card view can show
     # only price and underwriter, no coverage breakdown at all -- must

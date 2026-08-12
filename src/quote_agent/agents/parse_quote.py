@@ -154,6 +154,20 @@ def _build_quote_obtained(page_text: str, data: dict, benchmark: CoverageConfig)
     """Shared by extract_quote_from_text and extract_quotes_from_text --
     one extracted quote's raw dict, benchmark-filled where the page
     didn't show something, becomes one QuoteObtained.
+
+    Liability limit, DCPD, and every deductible fall back to the
+    benchmark when the page doesn't show them -- these are all things
+    the applicant explicitly chose during intake (you pick $1M vs $2M,
+    you pick a $500 vs $1000 deductible), so a real quote almost
+    certainly honoured what was requested even when a compact comparison
+    view doesn't re-display it (confirmed live, MyChoice: none of these
+    are shown at all, only price and underwriter). optional_benefits and
+    endorsements are different -- genuine product features that vary by
+    insurer, not something the applicant chose, so an empty extraction
+    for those stays empty rather than being assumed to match the
+    benchmark; if the benchmark wanted a specific endorsement and the
+    page never confirmed it, that's a real, honest gap worth surfacing
+    as a coverage variance, not something to paper over.
     """
     coverage_shown = data.get("third_party_liability_limit") is not None and data.get("dcpd_included") is not None
     coverage = benchmark.model_copy(
@@ -161,10 +175,16 @@ def _build_quote_obtained(page_text: str, data: dict, benchmark: CoverageConfig)
             "third_party_liability_limit": data.get("third_party_liability_limit")
             or benchmark.third_party_liability_limit,
             "dcpd_included": data.get("dcpd_included") if data.get("dcpd_included") is not None else benchmark.dcpd_included,
-            "dcpd_deductible": data.get("dcpd_deductible"),
-            "collision_deductible": data.get("collision_deductible"),
-            "comprehensive_deductible": data.get("comprehensive_deductible"),
-            "all_perils_deductible": data.get("all_perils_deductible"),
+            "dcpd_deductible": data.get("dcpd_deductible") if data.get("dcpd_deductible") is not None else benchmark.dcpd_deductible,
+            "collision_deductible": data.get("collision_deductible")
+            if data.get("collision_deductible") is not None
+            else benchmark.collision_deductible,
+            "comprehensive_deductible": data.get("comprehensive_deductible")
+            if data.get("comprehensive_deductible") is not None
+            else benchmark.comprehensive_deductible,
+            "all_perils_deductible": data.get("all_perils_deductible")
+            if data.get("all_perils_deductible") is not None
+            else benchmark.all_perils_deductible,
             "optional_benefits": data.get("optional_benefits") or {},
             "endorsements": data.get("endorsements") or [],
         }

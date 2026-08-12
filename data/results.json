@@ -12,7 +12,8 @@
       "timestamp": "2026-08-12T08:24:00Z",
       "source_url": "https://myaviva.avivainsurance.ca/avivaquoter/bol/auto/driver",
       "public_phone_route": "1-855-788-9090",
-      "artifact_ref": "evidence/aviva-direct-20260812T082400Z.txt"
+      "artifact_ref": "evidence/aviva-direct-20260812T082400Z.txt",
+      "screenshot_ref": null
     },
     "confidence": "low",
     "failure_reason": "Automation completed intake flow and obtained quote number but stopped at final step because both remaining options (purchase or email retrieval) exceed tool scope.",
@@ -31,10 +32,155 @@
       "timestamp": "2026-08-12T08:24:00Z",
       "source_url": "https://app.onlia.ca/#/auto/personal-info",
       "public_phone_route": null,
-      "artifact_ref": "evidence/onlia-broker-20260812T082400Z.txt"
+      "artifact_ref": "evidence/onlia-broker-20260812T082400Z.txt",
+      "screenshot_ref": null
     },
     "confidence": "low",
     "failure_reason": "Automation completed all data entry fields but stopped at Terms of Use checkbox requiring manual human consent before proceeding.",
     "next_action": "Requires a human to review and check the consent checkbox themselves -- this tool never checks a consent/agreement box on the user's behalf."
+  },
+  {
+    "registry_id": "wawanesa-via-mychoice",
+    "status": "quoted_non_comparable",
+    "returned_legal_underwriter": "Wawanesa Mutual",
+    "premium_annual": 3198.0,
+    "premium_monthly": null,
+    "returned_coverage": {
+      "effective_date": "2026-09-01",
+      "term_months": 12,
+      "third_party_liability_limit": 2000000,
+      "dcpd_included": true,
+      "dcpd_deductible": null,
+      "accident_benefits_mandatory": true,
+      "optional_benefits": {},
+      "uninsured_automobile_included": null,
+      "collision_deductible": 1000.0,
+      "comprehensive_deductible": 1000.0,
+      "all_perils_deductible": null,
+      "endorsements": [],
+      "telematics_opt_in": false
+    },
+    "coverage_variance": [
+      "endorsements"
+    ],
+    "discounts": [],
+    "evidence": {
+      "timestamp": "2026-08-12T18:33:53.879288+00:00",
+      "source_url": "https://www.mychoice.ca/insurance/car/ontario/",
+      "public_phone_route": null,
+      "artifact_ref": "evidence/wawanesa-via-mychoice-20260812T183353Z.txt",
+      "screenshot_ref": null
+    },
+    "confidence": "medium",
+    "failure_reason": null,
+    "next_action": null
+  },
+  {
+    "registry_id": "economical-via-mychoice",
+    "status": "quoted_non_comparable",
+    "returned_legal_underwriter": "Economical Mutual",
+    "premium_annual": 3369.0,
+    "premium_monthly": null,
+    "returned_coverage": {
+      "effective_date": "2026-09-01",
+      "term_months": 12,
+      "third_party_liability_limit": 2000000,
+      "dcpd_included": true,
+      "dcpd_deductible": null,
+      "accident_benefits_mandatory": true,
+      "optional_benefits": {},
+      "uninsured_automobile_included": null,
+      "collision_deductible": 1000.0,
+      "comprehensive_deductible": 1000.0,
+      "all_perils_deductible": null,
+      "endorsements": [],
+      "telematics_opt_in": false
+    },
+    "coverage_variance": [
+      "endorsements"
+    ],
+    "discounts": [],
+    "evidence": {
+      "timestamp": "2026-08-12T18:33:53.880720+00:00",
+      "source_url": "https://www.mychoice.ca/insurance/car/ontario/",
+      "public_phone_route": null,
+      "artifact_ref": "evidence/economical-via-mychoice-20260812T183353Z.txt",
+      "screenshot_ref": null
+    },
+    "confidence": "medium",
+    "failure_reason": null,
+    "next_action": null
+  },
+  {
+    "registry_id": "pembridge-via-mychoice",
+    "status": "quoted_non_comparable",
+    "returned_legal_underwriter": "Pembridge",
+    "premium_annual": 3923.0,
+    "premium_monthly": null,
+    "returned_coverage": {
+      "effective_date": "2026-09-01",
+      "term_months": 12,
+      "third_party_liability_limit": 2000000,
+      "dcpd_included": true,
+      "dcpd_deductible": null,
+      "accident_benefits_mandatory": true,
+      "optional_benefits": {},
+      "uninsured_automobile_included": null,
+      "collision_deductible": 1000.0,
+      "comprehensive_deductible": 1000.0,
+      "all_perils_deductible": null,
+      "endorsements": [],
+      "telematics_opt_in": false
+    },
+    "coverage_variance": [
+      "endorsements"
+    ],
+    "discounts": [],
+    "evidence": {
+      "timestamp": "2026-08-12T18:33:53.881930+00:00",
+      "source_url": "https://www.mychoice.ca/insurance/car/ontario/",
+      "public_phone_route": null,
+      "artifact_ref": "evidence/pembridge-via-mychoice-20260812T183353Z.txt",
+      "screenshot_ref": null
+    },
+    "confidence": "medium",
+    "failure_reason": null,
+    "next_action": null
+  },
+  {
+    "registry_id": "sgi-via-mychoice",
+    "status": "quoted_non_comparable",
+    "returned_legal_underwriter": "SGI Canada",
+    "premium_annual": 4369.0,
+    "premium_monthly": null,
+    "returned_coverage": {
+      "effective_date": "2026-09-01",
+      "term_months": 12,
+      "third_party_liability_limit": 2000000,
+      "dcpd_included": true,
+      "dcpd_deductible": null,
+      "accident_benefits_mandatory": true,
+      "optional_benefits": {},
+      "uninsured_automobile_included": null,
+      "collision_deductible": 1000.0,
+      "comprehensive_deductible": 1000.0,
+      "all_perils_deductible": null,
+      "endorsements": [],
+      "telematics_opt_in": false
+    },
+    "coverage_variance": [
+      "endorsements"
+    ],
+    "discounts": [],
+    "evidence": {
+      "timestamp": "2026-08-12T18:33:53.884449+00:00",
+      "source_url": "https://www.mychoice.ca/insurance/car/ontario/",
+      "public_phone_route": null,
+      "artifact_ref": "evidence/sgi-via-mychoice-20260812T183353Z.txt",
+      "screenshot_ref": null
+    },
+    "confidence": "medium",
+    "failure_reason": null,
+    "next_action": null
   }
 ]
