@@ -1,45 +1,5 @@
 [
   {
-    "registry_id": "aviva-direct",
-    "status": "manual_handoff",
-    "returned_legal_underwriter": null,
-    "premium_annual": null,
-    "premium_monthly": null,
-    "returned_coverage": null,
-    "coverage_variance": [],
-    "discounts": [],
-    "evidence": {
-      "timestamp": "2026-08-12T08:24:00Z",
-      "source_url": "https://myaviva.avivainsurance.ca/avivaquoter/bol/auto/driver",
-      "public_phone_route": "1-855-788-9090",
-      "artifact_ref": "evidence/aviva-direct-20260812T082400Z.txt",
-      "screenshot_ref": null
-    },
-    "confidence": "low",
-    "failure_reason": "Automation completed intake flow and obtained quote number but stopped at final step because both remaining options (purchase or email retrieval) exceed tool scope.",
-    "next_action": "Requires a human to either complete the purchase (out of scope -- this tool never binds a policy) or retrieve the emailed quote manually (out of scope -- no email-scraping capability)."
-  },
-  {
-    "registry_id": "onlia-broker",
-    "status": "manual_handoff",
-    "returned_legal_underwriter": null,
-    "premium_annual": null,
-    "premium_monthly": null,
-    "returned_coverage": null,
-    "coverage_variance": [],
-    "discounts": [],
-    "evidence": {
-      "timestamp": "2026-08-12T08:24:00Z",
-      "source_url": "https://app.onlia.ca/#/auto/personal-info",
-      "public_phone_route": null,
-      "artifact_ref": "evidence/onlia-broker-20260812T082400Z.txt",
-      "screenshot_ref": null
-    },
-    "confidence": "low",
-    "failure_reason": "Automation completed all data entry fields but stopped at Terms of Use checkbox requiring manual human consent before proceeding.",
-    "next_action": "Requires a human to review and check the consent checkbox themselves -- this tool never checks a consent/agreement box on the user's behalf."
-  },
-  {
     "registry_id": "wawanesa-via-mychoice",
     "status": "quoted_non_comparable",
     "returned_legal_underwriter": "Wawanesa Mutual",
@@ -184,6 +144,99 @@
       "screenshot_ref": null
     },
     "confidence": "medium",
+    "failure_reason": null,
+    "next_action": null
+  },
+  {
+    "registry_id": "aviva-direct",
+    "status": "unresolved",
+    "returned_legal_underwriter": null,
+    "premium_annual": null,
+    "premium_monthly": null,
+    "returned_coverage": null,
+    "coverage_variance": [],
+    "discounts": [],
+    "evidence": {
+      "timestamp": "2026-08-12T21:35:45.064635+00:00",
+      "source_url": "https://www.aviva.ca/en/find-insurance/vehicle/ontario-personal-auto-insurance/",
+      "public_phone_route": "1-855-788-9090",
+      "artifact_ref": "evidence/aviva-direct-20260812T213545Z.txt",
+      "screenshot_ref": null
+    },
+    "confidence": "low",
+    "failure_reason": "Browser closed unexpectedly while attempting to retrieve quote information from the target page.",
+    "next_action": "Needs manual investigation"
+  },
+  {
+    "registry_id": "onlia-broker",
+    "status": "blocked",
+    "returned_legal_underwriter": null,
+    "premium_annual": null,
+    "premium_monthly": null,
+    "returned_coverage": null,
+    "coverage_variance": [],
+    "discounts": [],
+    "evidence": {
+      "timestamp": "2026-08-12T21:36:06.342322+00:00",
+      "source_url": "https://app.onlia.ca/#/auto/personal-info?Affinity_Group=Onlia&utm_content=auto_quote_button",
+      "public_phone_route": null,
+      "artifact_ref": "evidence/onlia-broker-20260812T213606Z.txt",
+      "screenshot_ref": "evidence/onlia-broker-20260812T213604Z.png"
+    },
+    "confidence": "low",
+    "failure_reason": "Captcha validation failed, preventing progress through the insurance quote form.",
+    "next_action": "Retry manually later, or route through a licensed intermediary instead"
+  },
+  {
+    "registry_id": "belairdirect-direct",
+    "status": "quoted_non_comparable",
+    "returned_legal_underwriter": "<UNKNOWN>",
+    "premium_annual": 2628.96,
+    "premium_monthly": null,
+    "returned_coverage": {
+      "effective_date": "2026-09-01",
+      "term_months": 12,
+      "third_party_liability_limit": 1000000,
+      "dcpd_included": true,
+      "dcpd_deductible": 0.0,
+      "accident_benefits_mandatory": true,
+      "optional_benefits": {
+        "Family Protection": "included",
+        "Autocomfort®": "included",
+        "Non-Catastrophic injuries": "included",
+        "Catastrophic injuries": "included"
+      },
+      "uninsured_automobile_included": null,
+      "collision_deductible": 1000.0,
+      "comprehensive_deductible": 1000.0,
+      "all_perils_deductible": null,
+      "endorsements": [],
+      "telematics_opt_in": false
+    },
+    "coverage_variance": [
+      "dcpd_deductible",
+      "endorsements",
+      "optional_benefits.Autocomfort®",
+      "optional_benefits.Catastrophic injuries",
+      "optional_benefits.Family Protection",
+      "optional_benefits.Non-Catastrophic injuries",
+      "third_party_liability_limit"
+    ],
+    "discounts": [
+      {
+        "name": "Web discount",
+        "applied": true,
+        "conditional_on": null
+      }
+    ],
+    "evidence": {
+      "timestamp": "2026-08-13T03:44:03.029733+00:00",
+      "source_url": "https://www.belairdirect.com/en/car-insurance/ontario.html",
+      "public_phone_route": null,
+      "artifact_ref": "evidence/belairdirect-direct-20260813T034403Z.txt",
+      "screenshot_ref": null
+    },
+    "confidence": "high",
     "failure_reason": null,
     "next_action": null
   }
